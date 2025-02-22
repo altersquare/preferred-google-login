@@ -2,37 +2,55 @@
 <html>
 
 <head>
-    <title>Toggle Extension</title>
+    <title>Authuser Config</title>
     <style>
         body {
-            width: 200px;
-            /* Adjust width as needed */
-            font-family: sans-serif;
-            padding: 10px;
+            width: 250px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font */
+            padding: 20px;
+            background-color: #f4f4f4; /* Light background */
+            color: #333; /* Dark text color */
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            color: #007bff; /* Blue heading */
         }
 
         label {
             display: block;
-            /* Makes the label stack above the checkbox */
             margin-bottom: 5px;
+            font-weight: 500; /* Semi-bold labels */
+        }
+
+        textarea {
+            width: calc(100% - 12px); /* Full width with padding adjustment */
+            height: 80px;
+            padding: 8px;
+            border: 1px solid #ced4da; /* Light gray border */
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-family: monospace;
+            resize: vertical; /* Allow vertical resizing */
+            box-sizing: border-box; /* Include padding in width calculation */
+            background-color: #fff; /* White background for textareas */
+            color: #333;
         }
 
         input[type="checkbox"] {
+            margin-right: 10px;
+            vertical-align: middle; /* Align checkbox with label */
             appearance: none;
-            /* Remove default checkbox styling */
-            width: 40px;
-            height: 20px;
-            background-color: #ccc;
-            border-radius: 10px;
+            width: 30px;
+            height: 18px;
+            background-color: #ced4da;
+            border-radius: 9px;
             position: relative;
             cursor: pointer;
-            outline: none;
-            /* Remove outline on focus */
         }
 
         input[type="checkbox"]:checked {
-            background-color: #4CAF50;
-            /* Green when checked */
+            background-color: #007bff; /* Blue when checked */
         }
 
         input[type="checkbox"]::before {
@@ -40,22 +58,46 @@
             position: absolute;
             top: 2px;
             left: 2px;
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             background-color: white;
             border-radius: 50%;
             transition: transform 0.2s ease;
         }
 
         input[type="checkbox"]:checked::before {
-            transform: translateX(20px);
+            transform: translateX(12px);
+        }
+
+        .saveButton {
+            background-color: #007bff; /* Blue button */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%; /* Full width button */
+            transition: background-color 0.2s ease; /* Smooth hover effect */
+        }
+
+        .saveButton:hover {
+            background-color: #0056b3; /* Darker blue on hover */
         }
     </style>
 </head>
 
 <body>
-    <label for="authuserToggle">Enable Extension:</label>
+    <h2>Authuser Configuration</h2>  <label for="authuserToggle">Enable Extension:</label>
     <input type="checkbox" id="authuserToggle">
+
+    <label for="domainTextarea">Domains (one per line):</label>
+    <textarea id="domainTextarea"></textarea>
+
+    <label for="emailTextarea">Authuser Email:</label>
+    <textarea id="emailTextarea"></textarea>
+
+    <button class="saveButton" id="saveButton">Save</button>
+
     <script src="popup.js"></script>
 </body>
 

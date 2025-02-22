@@ -1,8 +1,8 @@
 {
 	"manifest_version": 3,
 	"name": "Default Google User",
-	"version": "2.0",
-	"description": "Adds the authuser parameter to domains (toggleable).",
+	"version": "3.0",
+	"description": "Adds the authuser parameter to domain.",
 	"permissions": [
 		"scripting",
 		"storage"
@@ -10,11 +10,13 @@
 	"action": {
 		"default_popup": "popup.html"
 	},
+	"host_permissions": [
+		"*://*/*"
+	],
 	"content_scripts": [
 		{
 			"matches": [
-				"*://*.youtube.com/*",
-				"*://*.gemini.google.com/*"
+				"<all_urls>"
 			],
 			"js": [
 				"content.js"
