@@ -1,0 +1,22 @@
+{
+	"manifest_version": 3,
+	"name": "Default Google User",
+	"version": "1.0",
+	"description": "Adds the authuser parameter to domains (toggleable).",
+	"permissions": [
+		"scripting",
+		"storage"
+	],
+	"content_scripts": [
+		{
+			"matches": [
+				"*://*.youtube.com/*",
+				"*://*.gemini.google.com/*"
+			],
+			"js": [
+				"content.js"
+			],
+			"run_at": "document_start"
+		}
+	]
+}
