@@ -52,13 +52,15 @@ async function handleDOMLoad() {
 		chrome.tabs.query(
 			{ active: true, currentWindow: true },
 			function (tabs) {
-				chrome.scripting.executeScript({
-					target: { tabId: tabs.id },
-					function: () => {
-						window.location.reload(); // Reload content scripts
-					},
-				});
-				window.close(); // Close the popup after saving
+				if (tabs && tabs.length > 0) {
+					chrome.scripting.executeScript({
+						target: { tabId: tabs[0].id },
+						function: () => {
+							window.location.reload(); // Reload content scripts
+						},
+					});
+					window.close(); // Close the popup after saving
+				}
 			}
 		);
 	});
