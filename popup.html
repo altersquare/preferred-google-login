@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Toggle Extension</title>
+    <style>
+        body {
+            width: 200px;
+            /* Adjust width as needed */
+            font-family: sans-serif;
+            padding: 10px;
+        }
+
+        label {
+            display: block;
+            /* Makes the label stack above the checkbox */
+            margin-bottom: 5px;
+        }
+
+        input[type="checkbox"] {
+            appearance: none;
+            /* Remove default checkbox styling */
+            width: 40px;
+            height: 20px;
+            background-color: #ccc;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            outline: none;
+            /* Remove outline on focus */
+        }
+
+        input[type="checkbox"]:checked {
+            background-color: #4CAF50;
+            /* Green when checked */
+        }
+
+        input[type="checkbox"]::before {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.2s ease;
+        }
+
+        input[type="checkbox"]:checked::before {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+
+<body>
+    <label for="authuserToggle">Enable Extension:</label>
+    <input type="checkbox" id="authuserToggle">
+    <script src="popup.js"></script>
+</body>
+
+</html>

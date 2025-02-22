@@ -1,12 +1,15 @@
 {
 	"manifest_version": 3,
 	"name": "Default Google User",
-	"version": "1.0",
+	"version": "2.0",
 	"description": "Adds the authuser parameter to domains (toggleable).",
 	"permissions": [
 		"scripting",
 		"storage"
 	],
+	"action": {
+		"default_popup": "popup.html"
+	},
 	"content_scripts": [
 		{
 			"matches": [

@@ -36,15 +36,11 @@ async function setStorage(key, value) {
 
 async function setAuthUser() {
 	try {
-		console.log("getting value");
 		const data = await getFromStorage(window.location.host);
-		console.log("value", data);
 
 		if (data[window.location.host]) {
 			await removeFromStorage(window.location.host);
-			console.log("found value, deleted");
 		} else {
-			console.log("setting value");
 			await setStorage(window.location.host, true);
 
 			// Your code that should only run once (ever) goes here
@@ -60,7 +56,7 @@ async function setAuthUser() {
 				}
 				window.location.href = newURL;
 			} else {
-				console.log("Authuser parameter already present.");
+				// console.log("Authuser parameter already present.");
 			}
 		}
 	} catch (error) {
@@ -70,7 +66,14 @@ async function setAuthUser() {
 
 (async () => {
 	try {
-		setAuthUser();
+		// Check if the extension is enabled
+		const { isEnabled } = await getFromStorage("isEnabled");
+
+		if (isEnabled) {
+			setAuthUser();
+		} else {
+			console.log("Extension is disabled.");
+		}
 	} catch (error) {
 		console.error("Error:", error);
 	}
