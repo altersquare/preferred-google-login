@@ -84,15 +84,7 @@ function validateAndMutateKey(key) {
  */
 async function getFromStorage(key) {
 	let storageKey = validateAndMutateKey(key); // Validate the key.
-	return new Promise((resolve, reject) => {
-		chrome.storage.local.get(storageKey, (result) => {
-			if (chrome.runtime.lastError) {
-				reject(chrome.runtime.lastError); // Reject with any Chrome runtime errors.
-			} else {
-				resolve(result); // Resolve with the retrieved data.
-			}
-		});
-	});
+	return await chrome.storage.local.get([storageKey]);
 }
 
 /**
@@ -102,15 +94,7 @@ async function getFromStorage(key) {
  */
 async function removeFromStorage(key) {
 	let storageKey = validateAndMutateKey(key); // Validate the key.
-	return new Promise((resolve, reject) => {
-		chrome.storage.local.remove(storageKey, () => {
-			if (chrome.runtime.lastError) {
-				reject(chrome.runtime.lastError); // Reject with any Chrome runtime errors.
-			} else {
-				resolve(); // Resolve when data is removed.
-			}
-		});
-	});
+	return await chrome.storage.local.remove(storageKey);
 }
 
 /**
@@ -121,13 +105,5 @@ async function removeFromStorage(key) {
  */
 async function setStorage(key, value) {
 	let storageKey = validateAndMutateKey(key); // Validate the key.
-	return new Promise((resolve, reject) => {
-		chrome.storage.local.set({ [storageKey]: value }, () => {
-			if (chrome.runtime.lastError) {
-				reject(chrome.runtime.lastError); // Reject with Chrome runtime error.
-			} else {
-				resolve(); // Resolve when data is set.
-			}
-		});
-	});
+	return await chrome.storage.local.set({ [storageKey]: value });
 }

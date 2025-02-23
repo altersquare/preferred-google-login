@@ -16,6 +16,12 @@ async function handleDOMLoad() {
 		await setStorage("isEnabled", toggle.checked);
 	});
 
+	// Add an event listener to the save button
+	saveButton.addEventListener(
+		"click",
+		handleSaveClick.bind(this, domainTextarea, emailTextarea)
+	);
+
 	// Load the domains and authuser email from storage
 	let { domains } = await getFromStorage("domains");
 	let { authUserEmail } = await getFromStorage("authUserEmail");
@@ -34,36 +40,32 @@ async function handleDOMLoad() {
 	// Populate the textareas with the loaded values
 	domainTextarea.value = domains.join("\n");
 	emailTextarea.value = authUserEmail;
+}
 
-	// Add an event listener to the save button
-	saveButton.addEventListener("click", async () => {
-		// Get the domains from the textarea, splitting by newline and filtering empty lines
-		const domains = domainTextarea.value
-			.split("\n")
-			.filter((domain) => domain.trim() !== "");
-		// Get the authuser email from the textarea
-		const authUserEmail = emailTextarea.value.trim();
+async function handleSaveClick(domainTextarea, emailTextarea) {
+	// Get the domains from the textarea, splitting by newline and filtering empty lines
+	const domains = domainTextarea.value
+		.split("\n")
+		.filter((domain) => domain.trim() !== "");
+	// Get the authuser email from the textarea
+	const authUserEmail = emailTextarea.value.trim();
 
-		// Save the domains and authuser email to storage
-		await setStorage("domains", domains);
-		await setStorage("authUserEmail", authUserEmail);
+	// Save the domains and authuser email to storage
+	await setStorage("domains", domains);
+	await setStorage("authUserEmail", authUserEmail);
 
-		// Reload the current tab to apply the changes
-		chrome.tabs.query(
-			{ active: true, currentWindow: true },
-			function (tabs) {
-				if (tabs && tabs.length > 0) {
-					chrome.scripting.executeScript({
-						target: { tabId: tabs[0].id },
-						function: () => {
-							window.location.reload(); // Reload content scripts
-						},
-					});
-					window.close(); // Close the popup after saving
-				}
-			}
-		);
+	// Reload the current tab to apply the changes
+	let tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+	if (!tabs || (tabs && tabs.length == 0)) {
+		console.error("No active tab found");
+	}
+	await chrome.scripting.executeScript({
+		target: { tabId: tabs[0].id },
+		function: () => {
+			window.location.reload(); // Reload content scripts
+		},
 	});
+	window.close(); // Close the popup after saving
 }
 
 // Helper function to validate the storage key
@@ -72,44 +74,23 @@ function validateAndMutateKey(key) {
 	return key;
 }
 
-// Helper function to get a value from storage
+/**
+ * Retrieves data from Chrome local storage.
+ * @param {string} key The key to retrieve.
+ * @returns {Promise<any>} A promise that resolves with the retrieved data.
+ */
 async function getFromStorage(key) {
-	let storageKey = validateAndMutateKey(key);
-	return new Promise((resolve, reject) => {
-		chrome.storage.local.get(storageKey, (result) => {
-			if (chrome.runtime.lastError) {
-				reject(chrome.runtime.lastError);
-			} else {
-				resolve(result);
-			}
-		});
-	});
+	let storageKey = validateAndMutateKey(key); // Validate the key.
+	return await chrome.storage.local.get([storageKey]);
 }
 
-// Helper function to remove a value from storage
-// async function removeFromStorage(key) {
-//     let storageKey = validateAndMutateKey(key);
-//     return new Promise((resolve, reject) => {
-//         chrome.storage.local.remove(storageKey, () => {
-//             if (chrome.runtime.lastError) {
-//                 reject(chrome.runtime.lastError);
-//             } else {
-//                 resolve();
-//             }
-//         });
-//     });
-// }
-
-// Helper function to set a value in storage
+/**
+ * Sets data in Chrome local storage.
+ * @param {string} key The key to set.
+ * @param {any} value The value to set.
+ * @returns {Promise<void>} A promise that resolves when the data is set.
+ */
 async function setStorage(key, value) {
-	let storageKey = validateAndMutateKey(key);
-	return new Promise((resolve, reject) => {
-		chrome.storage.local.set({ [storageKey]: value }, () => {
-			if (chrome.runtime.lastError) {
-				reject(chrome.runtime.lastError);
-			} else {
-				resolve();
-			}
-		});
-	});
+	let storageKey = validateAndMutateKey(key); // Validate the key.
+	return await chrome.storage.local.set({ [storageKey]: value });
 }
