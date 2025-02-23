@@ -5,64 +5,89 @@
     <title>Authuser Config</title>
     <style>
         body {
-            width: 250px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* Modern font */
-            padding: 20px;
-            background-color: #f4f4f4;
-            /* Light background */
-            color: #333;
-            /* Dark text color */
+            width: 300px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 24px;
+            background-color: #ffffff;
+            color: #1a1a1a;
+            line-height: 1.5;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
         }
 
         h2 {
-            margin-bottom: 15px;
-            color: #007bff;
-            /* Blue heading */
+            margin: 0 0 24px 0;
+            color: #2563eb;
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
         }
 
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 500;
-            /* Semi-bold labels */
+            color: #4b5563;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+
+        .input-group:focus-within label {
+            color: #2563eb;
         }
 
         textarea {
-            width: calc(100% - 12px);
-            /* Full width with padding adjustment */
+            width: 100%;
             height: 80px;
-            padding: 8px;
-            border: 1px solid #ced4da;
-            /* Light gray border */
-            border-radius: 4px;
-            margin-bottom: 15px;
-            font-family: monospace;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-family: 'SF Mono', 'Consolas', monospace;
+            font-size: 0.9rem;
             resize: vertical;
-            /* Allow vertical resizing */
             box-sizing: border-box;
-            /* Include padding in width calculation */
-            background-color: #fff;
-            /* White background for textareas */
-            color: #333;
+            background-color: #f9fafb;
+            color: #1f2937;
+            transition: all 0.2s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 12px;
+        }
+
+        .toggle-container label {
+            margin-bottom: 0;
+            padding-top: 2px;
         }
 
         input[type="checkbox"] {
-            margin-right: 10px;
-            vertical-align: middle;
-            /* Align checkbox with label */
             appearance: none;
-            width: 30px;
-            height: 18px;
-            background-color: #ced4da;
-            border-radius: 9px;
+            width: 44px;
+            height: 24px;
+            background-color: #e5e7eb;
+            border-radius: 12px;
             position: relative;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
 
         input[type="checkbox"]:checked {
-            background-color: #007bff;
-            /* Blue when checked */
+            background-color: #2563eb;
         }
 
         input[type="checkbox"]::before {
@@ -70,50 +95,84 @@
             position: absolute;
             top: 2px;
             left: 2px;
-            width: 14px;
-            height: 14px;
+            width: 20px;
+            height: 20px;
             background-color: white;
             border-radius: 50%;
-            transition: transform 0.2s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         input[type="checkbox"]:checked::before {
-            transform: translateX(12px);
+            transform: translateX(20px);
+        }
+
+        input[type="checkbox"]:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .saveButton {
-            background-color: #007bff;
-            /* Blue button */
+            background-color: #2563eb;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
+            padding: 12px 24px;
+            border-radius: 8px;
             cursor: pointer;
             width: 100%;
-            /* Full width button */
-            transition: background-color 0.2s ease;
-            /* Smooth hover effect */
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
         }
 
         .saveButton:hover {
-            background-color: #0056b3;
-            /* Darker blue on hover */
+            background-color: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .saveButton:active {
+            transform: translateY(1px);
+        }
+
+        .saveButton::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%) scale(0);
+            border-radius: 50%;
+            transition: transform 0.4s ease-out;
+        }
+
+        .saveButton:active::after {
+            transform: translate(-50%, -50%) scale(2);
         }
     </style>
 </head>
 
 <body>
     <h2>Authuser Configuration</h2>
-    <label for="authuserToggle">Enable Extension:</label>
-    <input type="checkbox" id="authuserToggle">
+    <div class="toggle-container">
+        <input type="checkbox" id="authuserToggle">
+        <label for="authuserToggle">Enable Extension</label>
+    </div>
 
-    <label for="domainTextarea">Domains (one per line):</label>
-    <textarea id="domainTextarea"></textarea>
+    <div class="input-group">
+        <label for="domainTextarea">Domains (one per line)</label>
+        <textarea id="domainTextarea" placeholder="Enter domains..."></textarea>
+    </div>
 
-    <label for="emailTextarea">Authuser Email:</label>
-    <textarea id="emailTextarea"></textarea>
+    <div class="input-group">
+        <label for="emailTextarea">Authuser Email</label>
+        <textarea id="emailTextarea" placeholder="Enter email..."></textarea>
+    </div>
 
-    <button class="saveButton" id="saveButton">Save</button>
+    <button class="saveButton" id="saveButton">Save Changes</button>
 
     <script src="popup.js"></script>
 </body>
