@@ -1,36 +1,33 @@
 // Immediately invoked function expression (IIFE) to execute code on page load.
 (async () => {
-	try {
-		// Retrieve stored settings from Chrome storage.
-		const { isEnabled } = await getFromStorage("isEnabled"); // Get whether the extension is enabled.
-		const { domains } = await getFromStorage("domains"); // Get the list of allowed domains.
-		const { authUserEmail } = await getFromStorage("authUserEmail"); // Get the default authuser email.
+    try {
+        // Retrieve stored settings from Chrome storage.
+        const { isEnabled } = await getFromStorage("isEnabled"); // Get whether the extension is enabled.
+        const { domainEmails } = await getFromStorage("domainEmails"); // Get the domain-email pairs.
 
-		// If on a Chrome internal page (e.g., extensions page), exit.
-		if (window.location.protocol === "chrome:") return;
+        // If on a Chrome internal page (e.g., extensions page), exit.
+        if (window.location.protocol === "chrome:") return;
 
-		// If the extension is explicitly disabled, exit.
-		if (isEnabled !== undefined && !isEnabled) {
-			console.log("Extension is disabled.");
-			return;
-		}
+        // If the extension is explicitly disabled, exit.
+        if (isEnabled !== undefined && !isEnabled) {
+            console.log("Extension is disabled.");
+            return;
+        }
 
-		// Check if the current URL's hostname is in the allowed domains list.
-		const isDomainAllowed = domains.find((elem) => {
-			return window.location.hostname.indexOf(elem) > -1; // Check if hostname contains allowed domain.
-		});
+        // Check if the current URL's hostname is in the allowed domains list.
+        const emailForDomain = Object.keys(domainEmails).find(domain => window.location.hostname.includes(domain));
 
-		// If the domain is not allowed, exit.
-		if (!isDomainAllowed) {
-			console.log("Domain not allowed.");
-			return;
-		}
+        // If the domain is not allowed or no email is set for it, exit.
+        if (!emailForDomain) {
+            console.log("Domain not allowed or no email set for this domain.");
+            return;
+        }
 
-		// Add the authuser parameter to the URL.
-		setAuthUser(authUserEmail);
-	} catch (error) {
-		console.error("Error:", error); // Log any errors.
-	}
+        // Add the authuser parameter to the URL.
+        setAuthUser(domainEmails[emailForDomain]);
+    } catch (error) {
+        console.error("Error:", error); // Log any errors.
+    }
 })();
 
 /**
@@ -39,6 +36,8 @@
  * @param {string} authUserEmail The email address to use for the authuser parameter.
  */
 async function setAuthUser(authUserEmail) {
+
+	console.log(authUserEmail);
 	const data = await getFromStorage(window.location.hostname); // Check if already set for this domain
 
 	if (data[window.location.hostname]) {
@@ -49,21 +48,22 @@ async function setAuthUser(authUserEmail) {
 
 	await setStorage(window.location.hostname, true); // Set a flag in storage indicating that we have modified this domain
 
-	const currentURL = window.location.href;
-	const authuserParam = "authuser=" + authUserEmail;
+    const currentURL = window.location.href;
+    const authuserParam = "authuser=" + authUserEmail;
 
-	// Check if the authuser parameter is already present in the URL.
-	if (currentURL.includes(authuserParam)) {
-		console.log("Authuser parameter already present.");
-		return;
-	}
+    // Check if the authuser parameter is already present in the URL.
+    if (currentURL.includes(authuserParam)) {
+        console.log("Authuser parameter already present.");
+        return;
+    }
 
-	// Add the authuser parameter to the URL.
-	let newURL = currentURL.includes("?")
-		? currentURL + "&" + authuserParam // Add with & if query params are present
-		: currentURL + "?" + authuserParam; // Add with ? if no query params are present
+    // Add the authuser parameter to the URL.
+    let newURL = currentURL.includes("?")
+        ? currentURL + "&" + authuserParam // Add with & if query params are present
+        : currentURL.replace(/(\.com).*/, "$1") + "?" + authuserParam; // Add with ? if no query params are present
 
-	window.location.href = newURL; // Redirect to the new URL.
+
+    window.location.href = newURL; // Redirect to the new URL.
 }
 
 /**
@@ -73,8 +73,8 @@ async function setAuthUser(authUserEmail) {
  * @throws {Error} If the key is not a string.
  */
 function validateAndMutateKey(key) {
-	if (typeof key !== "string") throw new Error("Invalid key");
-	return key;
+    if (typeof key !== "string") throw new Error("Invalid key");
+    return key;
 }
 
 /**
@@ -83,8 +83,8 @@ function validateAndMutateKey(key) {
  * @returns {Promise<any>} A promise that resolves with the retrieved data.
  */
 async function getFromStorage(key) {
-	let storageKey = validateAndMutateKey(key); // Validate the key.
-	return await chrome.storage.local.get([storageKey]);
+    let storageKey = validateAndMutateKey(key); // Validate the key.
+    return await chrome.storage.local.get([storageKey]);
 }
 
 /**
@@ -93,8 +93,8 @@ async function getFromStorage(key) {
  * @returns {Promise<void>} A promise that resolves when the data is removed.
  */
 async function removeFromStorage(key) {
-	let storageKey = validateAndMutateKey(key); // Validate the key.
-	return await chrome.storage.local.remove(storageKey);
+    let storageKey = validateAndMutateKey(key); // Validate the key.
+    return await chrome.storage.local.remove(storageKey);
 }
 
 /**
@@ -104,6 +104,6 @@ async function removeFromStorage(key) {
  * @returns {Promise<void>} A promise that resolves when the data is set.
  */
 async function setStorage(key, value) {
-	let storageKey = validateAndMutateKey(key); // Validate the key.
-	return await chrome.storage.local.set({ [storageKey]: value });
+    let storageKey = validateAndMutateKey(key); // Validate the key.
+    return await chrome.storage.local.set({ [storageKey]: value });
 }
