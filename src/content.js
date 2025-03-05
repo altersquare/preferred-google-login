@@ -37,7 +37,6 @@
  */
 async function setAuthUser(authUserEmail) {
 
-	console.log(authUserEmail);
 	const data = await getFromStorage(window.location.hostname); // Check if already set for this domain
 
 	if (data[window.location.hostname]) {
