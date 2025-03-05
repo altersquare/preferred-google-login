@@ -3,6 +3,7 @@ const googleDomains = {
 	google: "google.com",
 	maps: "maps.google.com",
 	news: "news.google.com",
+	gemini: "gemini.google.com",
 	translate: "translate.google.com",
 	drive: "drive.google.com",
 	docs: "docs.google.com",
