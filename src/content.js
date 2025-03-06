@@ -58,9 +58,7 @@ async function setAuthUser(authUserEmail) {
 	}
 
 	// Add the authuser parameter to the URL.
-	let newURL = currentURL.includes("?")
-		? currentURL + "&" + authuserParam // Add with & if query params are present
-		: currentURL.replace(/(\.com).*/, "$1") + "?" + authuserParam; // Add with ? if no query params are present
+	let newURL = currentURL.replace(/(\.com).*/, "$1") + "?" + authuserParam; // Add with ? if no query params are present
 
 	window.location.href = newURL; // Redirect to the new URL.
 }

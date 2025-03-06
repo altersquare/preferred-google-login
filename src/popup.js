@@ -87,7 +87,7 @@ function populateDomainEmailList(container, domainEmails, saveButton) {
 	}
 }
 
-function addDomainEmailPair(container, domain = "", email = "", saveButton) {
+function addDomainEmailPair(container, domain = "", email = "") {
 	const domainEmailContainer = document.createElement("div");
 	domainEmailContainer.className = "domain-email-container";
 
@@ -154,6 +154,23 @@ function addDomainEmailPair(container, domain = "", email = "", saveButton) {
 	// Add the row to the container
 	container.appendChild(domainEmailContainer);
 
+	// Function to check input fields and enable/disable the add button
+	function checkInputs() {
+		const addButton = document.getElementById("addButton");
+		if (domainInput.value.trim() || emailInput.value.trim()) {
+			addButton.disabled = false;
+		} else {
+			addButton.disabled = true;
+		}
+	}
+
+	// Listen for input events to update button state
+	domainInput.addEventListener("input", checkInputs);
+	emailInput.addEventListener("input", checkInputs);
+
+	// Call checkInputs initially to disable button if inputs are empty
+	checkInputs();
+
 	// Validation for email input
 	emailInput.addEventListener("input", () => {
 		enableSaveButton();
@@ -196,7 +213,7 @@ function addDomainEmailPair(container, domain = "", email = "", saveButton) {
 }
 
 function validateEmail(email) {
-	const regex = /^[^\s@]+@gmail\.com$/;
+	const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 	return regex.test(email);
 }
 

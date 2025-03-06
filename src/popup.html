@@ -1,287 +1,288 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-    <title>Authuser Config</title>
-    <style>
-        body {
-            width: 340px;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #ffffff;
-            color: #1a1a1a;
-            line-height: 1.5;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
-            border-radius: 12px;
-            margin:0px;
-        }
+	<head>
+		<title>Authuser Config</title>
+		<style>
+			body {
+				width: 340px;
+				font-family:
+					"Inter",
+					-apple-system,
+					BlinkMacSystemFont,
+					"Segoe UI",
+					Roboto,
+					sans-serif;
+				background-color: #ffffff;
+				color: #1a1a1a;
+				line-height: 1.5;
+				box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+				border-radius: 12px;
+				margin: 0px;
+			}
 
-        .heading {
-            margin:0px;
-            color: #2563eb;
-            font-size: 1rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap:5px;
-        }
-        .heading-wrapper {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            flex-direction: row;
-        }
+			.heading {
+				margin: 0px;
+				color: #2563eb;
+				font-size: 1rem;
+				font-weight: 600;
+				display: flex;
+				align-items: center;
+				gap: 5px;
+			}
+			.heading-wrapper {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 10px;
+				flex-direction: row;
+			}
 
-        .toggle-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+			.toggle-wrapper {
+				display: flex;
+				align-items: center;
+				gap: 5px;
+			}
 
-        .toggle-wrapper label {
-            margin-bottom: 0;
-            padding-top: 2px;
-        }
+			.toggle-wrapper label {
+				margin-bottom: 0;
+				padding-top: 2px;
+			}
 
-        input[type="checkbox"] {
-            appearance: none;
-            width: 26px;
-            height: 16px;
-            background-color: #e5e7eb;
-            border-radius: 12px;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+			input[type="checkbox"] {
+				appearance: none;
+				width: 24px;
+				height: 14px;
+				background-color: #e5e7eb;
+				border-radius: 7px;
+				position: relative;
+				cursor: pointer;
+				transition: all 0.3s ease;
+			}
 
-        input[type="checkbox"]:checked {
-            background-color: #2563eb;
-        }
+			input[type="checkbox"]:checked {
+				background-color: #2563eb;
+			}
 
-        input[type="checkbox"]::before {
-            content: "";
-            position: absolute;
-            top: 1.5px;
-            left: -8px;
-            width: 12px;
-            height: 12px;
-            background-color: white;
-            border-radius: 50%;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
+			input[type="checkbox"]::before {
+				content: "";
+				position: absolute;
+				top: 2px;
+				left: 2px;
+				width: 10px;
+				height: 10px;
+				background-color: white;
+				border-radius: 50%;
+				transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+				box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+			}
 
-        input[type="checkbox"]:checked::before {
-            transform: translateX(20px);
-        }
+			input[type="checkbox"]:checked::before {
+				transform: translateX(10px);
+			}
 
-        input[type="checkbox"]:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
+			.domain-email-list {
+				margin-bottom: 5px;
+				height: 100%;
+				max-height: 200px;
+				overflow-y: auto;
+				padding-right: 0px;
+				padding-left: 10px;
+			}
 
-        .domain-email-list {
-            margin-bottom: 5px;
-            height: 100%;
-            max-height:200px;
-            overflow-y: auto;
-            padding-right:0px;
-            padding-left: 10px;
-        }
+			.domain-email-container {
+				display: flex;
+				align-items: start;
+				gap: 8px;
+				margin-bottom: 5px;
+			}
 
-        .domain-email-container {
-            display: flex;
-            align-items: start;
-            gap: 8px;
-            margin-bottom: 5px;
-        }
+			.domain-email-container input[type="text"] {
+				flex: 1;
+				padding: 5px;
+				border: 2px solid #e5e7eb;
+				border-radius: 8px;
+				font-size: 11px;
+				background-color: #ffffff;
+				color: #1f2937;
+				transition: all 0.2s ease;
+			}
 
-        .domain-email-container input[type="text"] {
-            flex: 1;
-            padding: 5px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 11px;
-            background-color: #ffffff;
-            color: #1f2937;
-            transition: all 0.2s ease;
-        }
+			.domain-email-container input[type="text"]:focus {
+				outline: none;
+				border-color: #2563eb;
+				box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+			}
 
-        .domain-email-container input[type="text"]:focus {
-            outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
+			.domain-email-container .remove-button {
+				background: none;
+				border: none;
+				cursor: pointer;
+				color: #dc2626;
+				font-size: 1.2rem;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 0;
+				padding-right: 10px;
+				transition: color 0.2s ease;
+			}
 
-        .domain-email-container .remove-button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #dc2626;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-            padding-right:10px;
-            transition: color 0.2s ease;
-        }
+			.domain-email-container .remove-button:hover {
+				color: #b91c1c;
+			}
 
-        .domain-email-container .remove-button:hover {
-            color: #b91c1c;
-        }
+			.button-row {
+				display: flex;
+				gap: 8px;
+				padding: 10px;
+			}
 
-        .button-row {
-            display: flex;
-            gap: 8px;
-            padding:10px
-        }
+			.addButton,
+			.saveButton {
+				flex: 1;
+				background-color: #10b981;
+				color: white;
+				border: none;
+				padding: 0.5rem 0.75rem;
+				border-radius: 6px;
+				cursor: pointer;
+				font-weight: 500;
+				font-size: 0.75rem;
+				transition: all 0.2s ease;
+			}
 
-        .addButton,
-        .saveButton {
-            flex: 1;
-            background-color: #10b981;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.2s ease;
-        }
+			.addButton:hover,
+			.saveButton:hover {
+				opacity: 0.9;
+			}
 
-        .addButton:hover,
-        .saveButton:hover {
-            opacity: 0.9;
-        }
+			.saveButton {
+				background-color: #2563eb;
+			}
+			.toggle-container {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+			}
 
-        .saveButton {
-            background-color: #2563eb;
-        }
-        .toggle-container {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-        }
+			.saveButton.disabled {
+				background-color: #ccc;
+				color: #666;
+				cursor: not-allowed;
+				opacity: 0.6;
+				pointer-events: none; /* Prevents clicks */
+			}
 
-        .saveButton.disabled {
-            background-color: #ccc;
-            color: #666;
-            cursor: not-allowed;
-            opacity: 0.6;
-            pointer-events: none; /* Prevents clicks */
-        }
+			.error-message {
+				color: #dc2626;
+				font-size: 0.5rem;
+				margin-top: 2px;
+				display: none;
+				padding-left: 6px;
+			}
 
-        .error-message {
-            color: #dc2626;
-            font-size: .5rem;
-            margin-top: 2px;
-            display: none;
-            padding-left:6px;
-        }
+			.input-domain-container {
+				display: flex;
+				flex-direction: column;
+				padding-left: 1px;
+				width: 30%;
+			}
+			.input-email-container {
+				display: flex;
+				flex-direction: column;
+				padding-left: 1px;
+				width: 60%;
+				margin-left: 10px;
+			}
 
-        .input-domain-container {
-            display: flex;
-            flex-direction: column;
-            padding-left: 1px;
-            width:30%;
-        }
-        .input-email-container {
-            display: flex;
-            flex-direction: column;
-            padding-left: 1px;
-            width:60%;
-            margin-left: 10px;
-        }
+			input[list] {
+				width: 100%;
+				position: relative;
+				z-index: 1;
+			}
 
+			datalist {
+				position: absolute;
+				left: 0;
+				top: 100%;
+				width: 100%;
+				height: 0.5rem;
+			}
+			.domain-email-list::-webkit-scrollbar {
+				background-color: #fff;
+				width: 13px;
+			}
 
-        input[list] {
-            width: 100%;
-            position: relative;
-            z-index: 1;
-        }
+			/* background of the scrollbar except button or resizer */
+			.domain-email-list::-webkit-scrollbar-track {
+				background-color: #fff;
+			}
 
-        datalist {
-            position: absolute;
-            left: 0;
-            top: 100%;
-            width: 100%;
-            height: 0.5rem;
-        }
-        .domain-email-list::-webkit-scrollbar {
-            background-color: #fff;
-            width: 13px;
-        }
+			/* scrollbar itself */
+			.domain-email-list::-webkit-scrollbar-thumb {
+				background-color: #babac0;
+				border-radius: 16px;
+				border: 4px solid #fff;
+			}
 
-        /* background of the scrollbar except button or resizer */
-        .domain-email-list::-webkit-scrollbar-track {
-            background-color: #fff;
-        }
+			/* set button(top and bottom of the scrollbar) */
+			.domain-email-list::-webkit-scrollbar-button {
+				display: none;
+			}
+			.google-icon {
+				padding: 0px;
+				margin: 0px;
+			}
+		</style>
+	</head>
 
-        /* scrollbar itself */
-        .domain-email-list::-webkit-scrollbar-thumb {
-            background-color: #babac0;
-            border-radius: 16px;
-            border: 4px solid #fff;
-        }
+	<body>
+		<div class="heading-wrapper">
+			<div class="heading">
+				Preferred
+				<svg
+					class="lJpQBb google-icon"
+					aria-label="Go to Google Home"
+					height="16"
+					width="16"
+					focusable="false"
+					viewBox="0 0 24 24"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						fill="#4285f4"
+						d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"
+					></path>
+					<path
+						fill="#34a853"
+						d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"
+					></path>
+					<path
+						fill="#fbbc04"
+						d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"
+					></path>
+					<path
+						fill="#ea4335"
+						d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"
+					></path>
+				</svg>
+				Login
+			</div>
+			<div class="toggle-wrapper">
+				<input type="checkbox" id="authuserToggle" />
+				<label for="authuserToggle">Enable Extension</label>
+			</div>
+		</div>
 
-        /* set button(top and bottom of the scrollbar) */
-        .domain-email-list::-webkit-scrollbar-button {
-            display: none;
-        }
-        .google-icon{
-            padding:0px;
-            margin:0px;
-        }
-	</style>
-</head>
-
-<body>
-    <div class="heading-wrapper">
-        <div class="heading">
-            Preferred 
-            <svg
-                class="lJpQBb google-icon"
-                aria-label="Go to Google Home"
-                height="16"
-                width="16"
-                focusable="false"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-            >
-                <path
-                    fill="#4285f4"
-                    d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"
-                ></path>
-                <path
-                    fill="#34a853"
-                    d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"
-                ></path>
-                <path
-                    fill="#fbbc04"
-                    d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"
-                ></path>
-                <path
-                    fill="#ea4335"
-                    d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"
-                ></path>
-            </svg>
-            Login
-        </div>
-        <div class="toggle-wrapper">
-            <input type="checkbox" id="authuserToggle" />
-            <label for="authuserToggle">Enable Extension</label>
-        </div>
-    </div>
-
-    <div class="domain-email-list" id="domainEmailList">
-        <!-- Dynamic content will be inserted here -->
-    </div>
-    <div class="button-row">
-        <button class="addButton" id="addButton">Add Domain</button>
-        <button class="saveButton disabled" id="saveButton">
-            Save Changes
-        </button>
-    </div>
-	<script src="popup.js"></script>
-</body>
+		<div class="domain-email-list" id="domainEmailList">
+			<!-- Dynamic content will be inserted here -->
+		</div>
+		<div class="button-row">
+			<button class="addButton" id="addButton">Add Domain</button>
+			<button class="saveButton disabled" id="saveButton">
+				Save Changes
+			</button>
+		</div>
+		<script src="popup.js"></script>
+	</body>
 </html>
