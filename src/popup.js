@@ -112,7 +112,7 @@ function addDomainEmailPair(container, domain = "", email = "") {
 	domainInput.type = "text";
 	domainInput.placeholder = "Search or select domain...";
 	domainInput.value = domain;
-	domainInput.setAttribute("list", `domain-list-${Math.random()}`);
+	domainInput.setAttribute("list", "domain-list");
 	listContainer.appendChild(domainInput);
 
 	// Datalist for autocomplete suggestions
