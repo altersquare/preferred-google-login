@@ -172,6 +172,13 @@
 				opacity: 0.6;
 				pointer-events: none; /* Prevents clicks */
 			}
+			.addButton.disabled {
+				background-color: #ccc;
+				color: #666;
+				cursor: not-allowed;
+				opacity: 0.6;
+				pointer-events: none; /* Prevents clicks */
+			}
 
 			.error-message {
 				color: #dc2626;
@@ -278,7 +285,9 @@
 			<!-- Dynamic content will be inserted here -->
 		</div>
 		<div class="button-row">
-			<button class="addButton" id="addButton">Add Domain</button>
+			<button class="addButton disabled" id="addButton">
+				Add Domain
+			</button>
 			<button class="saveButton disabled" id="saveButton">
 				Save Changes
 			</button>
