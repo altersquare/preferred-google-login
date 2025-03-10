@@ -167,7 +167,7 @@ function addDomainEmailPair(container, domain = "", email = "") {
 		const domainValue = domainInput.value.trim().split(" ")[0];
 
 		const isValidDomain = Object.keys(googleDomains).includes(domainValue);
-		const isValidEmail = validateEmail(email);
+		const isValidEmail = validateEmail(emailInput.value.trim());
 
 		if (domainValue && isValidDomain && isValidEmail) {
 			addButton.classList.remove("disabled");
@@ -178,7 +178,7 @@ function addDomainEmailPair(container, domain = "", email = "") {
 
 	// Listen for input events to update button state
 	domainInput.addEventListener("input", checkInputs);
-
+	emailInput.addEventListener("input", checkInputs); 
 	// Call checkInputs initially to disable button if inputs are empty
 	checkInputs();
 
