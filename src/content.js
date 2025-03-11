@@ -3,8 +3,7 @@
 	try {
 		// Retrieve stored settings from Chrome storage.
 		const { isEnabled } = await getFromStorage("isEnabled"); // Get whether the extension is enabled.
-		const { domains } = await getFromStorage("domains"); // Get the list of allowed domains.
-		const { authUserEmail } = await getFromStorage("authUserEmail"); // Get the default authuser email.
+		const { domainEmails } = await getFromStorage("domainEmails"); // Get the domain-email pairs.
 
 		// If on a Chrome internal page (e.g., extensions page), exit.
 		if (window.location.protocol === "chrome:") return;
@@ -16,18 +15,18 @@
 		}
 
 		// Check if the current URL's hostname is in the allowed domains list.
-		const isDomainAllowed = domains.find((elem) => {
-			return window.location.hostname.indexOf(elem) > -1; // Check if hostname contains allowed domain.
-		});
+		const emailForDomain = Object.keys(domainEmails).find((domain) =>
+			window.location.hostname.includes(domain)
+		);
 
-		// If the domain is not allowed, exit.
-		if (!isDomainAllowed) {
-			console.log("Domain not allowed.");
+		// If the domain is not allowed or no email is set for it, exit.
+		if (!emailForDomain) {
+			console.log("Domain not allowed or no email set for this domain.");
 			return;
 		}
 
 		// Add the authuser parameter to the URL.
-		setAuthUser(authUserEmail);
+		setAuthUser(domainEmails[emailForDomain]);
 	} catch (error) {
 		console.error("Error:", error); // Log any errors.
 	}
@@ -59,9 +58,7 @@ async function setAuthUser(authUserEmail) {
 	}
 
 	// Add the authuser parameter to the URL.
-	let newURL = currentURL.includes("?")
-		? currentURL + "&" + authuserParam // Add with & if query params are present
-		: currentURL + "?" + authuserParam; // Add with ? if no query params are present
+	let newURL = currentURL.replace(/(\.com).*/, "$1") + "?" + authuserParam; // Add with ? if no query params are present
 
 	window.location.href = newURL; // Redirect to the new URL.
 }

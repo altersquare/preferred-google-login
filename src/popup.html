@@ -1,180 +1,297 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
+	<head>
+		<title>Authuser Config</title>
+		<style>
+			body {
+				width: 340px;
+				font-family:
+					"Inter",
+					-apple-system,
+					BlinkMacSystemFont,
+					"Segoe UI",
+					Roboto,
+					sans-serif;
+				background-color: #ffffff;
+				color: #1a1a1a;
+				line-height: 1.5;
+				box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+				border-radius: 12px;
+				margin: 0px;
+			}
 
-<head>
-    <title>Authuser Config</title>
-    <style>
-        body {
-            width: 300px;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            padding: 24px;
-            background-color: #ffffff;
-            color: #1a1a1a;
-            line-height: 1.5;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
-            border-radius: 12px;
-        }
+			.heading {
+				margin: 0px;
+				color: #2563eb;
+				font-size: 1rem;
+				font-weight: 600;
+				display: flex;
+				align-items: center;
+				gap: 5px;
+			}
+			.heading-wrapper {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 10px;
+				flex-direction: row;
+			}
 
-        h2 {
-            margin: 0 0 24px 0;
-            color: #2563eb;
-            font-size: 1.5rem;
-            font-weight: 600;
-            letter-spacing: -0.025em;
-        }
+			.toggle-wrapper {
+				display: flex;
+				align-items: center;
+				gap: 5px;
+			}
 
-        .input-group {
-            margin-bottom: 20px;
-        }
+			.toggle-wrapper label {
+				margin-bottom: 0;
+				padding-top: 2px;
+			}
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #4b5563;
-            font-size: 0.9rem;
-            transition: color 0.2s ease;
-        }
+			input[type="checkbox"] {
+				appearance: none;
+				width: 24px;
+				height: 14px;
+				background-color: #e5e7eb;
+				border-radius: 7px;
+				position: relative;
+				cursor: pointer;
+				transition: all 0.3s ease;
+			}
 
-        .input-group:focus-within label {
-            color: #2563eb;
-        }
+			input[type="checkbox"]:checked {
+				background-color: #2563eb;
+			}
 
-        textarea {
-            width: 100%;
-            height: 80px;
-            padding: 12px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            font-family: 'SF Mono', 'Consolas', monospace;
-            font-size: 0.9rem;
-            resize: vertical;
-            box-sizing: border-box;
-            background-color: #f9fafb;
-            color: #1f2937;
-            transition: all 0.2s ease;
-        }
+			input[type="checkbox"]::before {
+				content: "";
+				position: absolute;
+				top: 2px;
+				left: 2px;
+				width: 10px;
+				height: 10px;
+				background-color: white;
+				border-radius: 50%;
+				transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+				box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+			}
 
-        textarea:focus {
-            outline: none;
-            border-color: #2563eb;
-            background-color: #ffffff;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
+			input[type="checkbox"]:checked::before {
+				transform: translateX(10px);
+			}
 
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-            gap: 12px;
-        }
+			.domain-email-list {
+				margin-bottom: 5px;
+				height: 100%;
+				max-height: 200px;
+				overflow-y: auto;
+				padding-right: 0px;
+				padding-left: 10px;
+			}
 
-        .toggle-container label {
-            margin-bottom: 0;
-            padding-top: 2px;
-        }
+			.domain-email-container {
+				display: flex;
+				align-items: start;
+				gap: 8px;
+				margin-bottom: 5px;
+			}
 
-        input[type="checkbox"] {
-            appearance: none;
-            width: 44px;
-            height: 24px;
-            background-color: #e5e7eb;
-            border-radius: 12px;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+			.domain-email-container input[type="text"] {
+				flex: 1;
+				padding: 5px;
+				border: 2px solid #e5e7eb;
+				border-radius: 8px;
+				font-size: 11px;
+				background-color: #ffffff;
+				color: #1f2937;
+				transition: all 0.2s ease;
+			}
 
-        input[type="checkbox"]:checked {
-            background-color: #2563eb;
-        }
+			.domain-email-container input[type="text"]:focus {
+				outline: none;
+				border-color: #2563eb;
+				box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+			}
 
-        input[type="checkbox"]::before {
-            content: "";
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 20px;
-            height: 20px;
-            background-color: white;
-            border-radius: 50%;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
+			.domain-email-container .remove-button {
+				background: none;
+				border: none;
+				cursor: pointer;
+				color: #dc2626;
+				font-size: 1.2rem;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 0;
+				padding-right: 10px;
+				transition: color 0.2s ease;
+			}
 
-        input[type="checkbox"]:checked::before {
-            transform: translateX(20px);
-        }
+			.domain-email-container .remove-button:hover {
+				color: #b91c1c;
+			}
 
-        input[type="checkbox"]:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
+			.button-row {
+				display: flex;
+				gap: 8px;
+				padding: 10px;
+			}
 
-        .saveButton {
-            background-color: #2563eb;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
-            position: relative;
-            overflow: hidden;
-        }
+			.addButton,
+			.saveButton {
+				flex: 1;
+				background-color: #10b981;
+				color: white;
+				border: none;
+				padding: 0.5rem 0.75rem;
+				border-radius: 6px;
+				cursor: pointer;
+				font-weight: 500;
+				font-size: 0.75rem;
+				transition: all 0.2s ease;
+			}
 
-        .saveButton:hover {
-            background-color: #1d4ed8;
-            transform: translateY(-1px);
-        }
+			.addButton:hover,
+			.saveButton:hover {
+				opacity: 0.9;
+			}
 
-        .saveButton:active {
-            transform: translateY(1px);
-        }
+			.saveButton {
+				background-color: #2563eb;
+			}
+			.toggle-container {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+			}
 
-        .saveButton::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.1);
-            transform: translate(-50%, -50%) scale(0);
-            border-radius: 50%;
-            transition: transform 0.4s ease-out;
-        }
+			.saveButton.disabled {
+				background-color: #ccc;
+				color: #666;
+				cursor: not-allowed;
+				opacity: 0.6;
+				pointer-events: none; /* Prevents clicks */
+			}
+			.addButton.disabled {
+				background-color: #ccc;
+				color: #666;
+				cursor: not-allowed;
+				opacity: 0.6;
+				pointer-events: none; /* Prevents clicks */
+			}
 
-        .saveButton:active::after {
-            transform: translate(-50%, -50%) scale(2);
-        }
-    </style>
-</head>
+			.error-message {
+				color: #dc2626;
+				font-size: 0.5rem;
+				margin-top: 2px;
+				display: none;
+				padding-left: 6px;
+			}
 
-<body>
-    <h2>Authuser Configuration</h2>
-    <div class="toggle-container">
-        <input type="checkbox" id="authuserToggle">
-        <label for="authuserToggle">Enable Extension</label>
-    </div>
+			.input-domain-container {
+				display: flex;
+				flex-direction: column;
+				padding-left: 1px;
+				width: 30%;
+			}
+			.input-email-container {
+				display: flex;
+				flex-direction: column;
+				padding-left: 1px;
+				width: 60%;
+				margin-left: 10px;
+			}
 
-    <div class="input-group">
-        <label for="domainTextarea">Domains (one per line)</label>
-        <textarea id="domainTextarea" placeholder="Enter domains..."></textarea>
-    </div>
+			input[list] {
+				width: 100%;
+				position: relative;
+				z-index: 1;
+			}
 
-    <div class="input-group">
-        <label for="emailTextarea">Authuser Email</label>
-        <textarea id="emailTextarea" placeholder="Enter email..."></textarea>
-    </div>
+			datalist {
+				position: absolute;
+				left: 0;
+				top: 100%;
+				width: 100%;
+				height: 0.5rem;
+			}
+			.domain-email-list::-webkit-scrollbar {
+				background-color: #fff;
+				width: 13px;
+			}
 
-    <button class="saveButton" id="saveButton">Save Changes</button>
+			/* background of the scrollbar except button or resizer */
+			.domain-email-list::-webkit-scrollbar-track {
+				background-color: #fff;
+			}
 
-    <script src="popup.js"></script>
-</body>
+			/* scrollbar itself */
+			.domain-email-list::-webkit-scrollbar-thumb {
+				background-color: #babac0;
+				border-radius: 16px;
+				border: 4px solid #fff;
+			}
 
+			/* set button(top and bottom of the scrollbar) */
+			.domain-email-list::-webkit-scrollbar-button {
+				display: none;
+			}
+			.google-icon {
+				padding: 0px;
+				margin: 0px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="heading-wrapper">
+			<div class="heading">
+				Preferred
+				<svg
+					class="lJpQBb google-icon"
+					aria-label="Go to Google Home"
+					height="16"
+					width="16"
+					focusable="false"
+					viewBox="0 0 24 24"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						fill="#4285f4"
+						d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"
+					></path>
+					<path
+						fill="#34a853"
+						d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"
+					></path>
+					<path
+						fill="#fbbc04"
+						d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"
+					></path>
+					<path
+						fill="#ea4335"
+						d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"
+					></path>
+				</svg>
+				Login
+			</div>
+			<div class="toggle-wrapper">
+				<input type="checkbox" id="authuserToggle" />
+				<label for="authuserToggle">Enable Extension</label>
+			</div>
+		</div>
+
+		<div class="domain-email-list" id="domainEmailList">
+			<!-- Dynamic content will be inserted here -->
+		</div>
+		<div class="button-row">
+			<button class="addButton disabled" id="addButton">
+				Add Domain
+			</button>
+			<button class="saveButton disabled" id="saveButton">
+				Save Changes
+			</button>
+		</div>
+		<script src="popup.js"></script>
+	</body>
 </html>
