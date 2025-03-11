@@ -2,24 +2,21 @@
 
 A Chrome extension that automatically adds the `authuser` parameter to Google domains, allowing you to set your preferred Google account for each service.
 
-## Description
+## Overview
 
-If you use multiple Google accounts, you know the frustration of constantly being logged into the wrong account when visiting different Google services. This extension solves that problem by automatically adding the appropriate `authuser` parameter to URLs based on the domain, ensuring you're always using your preferred account for each Google service.
+If you use multiple Google accounts (personal, work, school), you know the frustration of constantly being logged into the wrong account when visiting different Google services. This extension solves that problem by automatically adding the appropriate `authuser` parameter to URLs based on the domain, ensuring you're always using your preferred account for each Google service.
 
 ## Features
 
 - **Domain-Specific Account Selection**: Set different preferred accounts for different Google domains (e.g., YouTube, Gmail, Drive)
 - **Auto-Redirect**: Automatically redirects to add the `authuser` parameter when you visit a configured Google domain
-- **Smart Loop Prevention**: Intelligently prevents redirect loops by tracking modified URLs
+- **Smart Loop Prevention**: Intelligently prevents redirect loops
 - **Google Domain Autocomplete**: Includes autocomplete suggestions for popular Google domains
 - **User-Friendly Interface**: Clean, modern UI with toggle to quickly enable/disable the extension
 - **Multiple Account Support**: Easily manage multiple Google accounts across different services
+- **Privacy-Focused**: No data collection, all settings stored locally in your browser
 
 ## Installation
-
-### From Chrome Web Store
-1. Visit the [Chrome Web Store](https://chrome.google.com/webstore/) and search for "Preferred Google Login"
-2. Click "Add to Chrome"
 
 ### Manual Installation (Developer Mode)
 1. Download or clone this repository:
@@ -36,7 +33,7 @@ If you use multiple Google accounts, you know the frustration of constantly bein
 2. Toggle the extension on/off using the switch in the header
 3. Add domain and email pairs:
    - Click "Add Domain" to create a new entry
-   - Enter a Google domain (e.g., `youtube.com`, `mail.google.com`)
+   - Enter a Google domain (or select from autocomplete suggestions)
    - Enter the Gmail address you prefer to use for that domain
 4. Click "Save Changes" to apply your settings
 5. Visit any Google service - the extension will automatically redirect you to use your preferred account
@@ -51,7 +48,7 @@ If you use multiple Google accounts, you know the frustration of constantly bein
 
 ## Supported Google Domains
 
-The extension includes autocomplete suggestions for many Google domains, including:
+The extension supports numerous Google domains, including:
 - google.com
 - youtube.com
 - mail.google.com
@@ -60,7 +57,18 @@ The extension includes autocomplete suggestions for many Google domains, includi
 - cloud.google.com
 - meet.google.com
 - photos.google.com
+- gemini.google.com
+- classroom.google.com
 - and many more!
+
+## How It Works
+
+The extension:
+1. Checks if the current website is a Google domain
+2. Determines if you've configured a preferred account for that domain
+3. Adds the appropriate `authuser` parameter to the URL
+4. Implements safeguards to prevent redirect loops
+5. Provides an intuitive UI for managing your preferences
 
 ## Technical Details
 
