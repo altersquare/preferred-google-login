@@ -2,9 +2,6 @@
 
 A Chrome extension that automatically adds the `authuser` parameter to Google domains, allowing you to set your preferred Google account for each service.
 
-![Chrome Web Store](https://img.shields.io/chrome-web-store/v/preferred-google-login)
-![License](https://img.shields.io/github/license/altersquareio/preferred-google-login)
-
 ## Overview
 
 If you use multiple Google accounts (personal, work, school), you know the frustration of constantly being logged into the wrong account when visiting different Google services. This extension solves that problem by automatically adding the appropriate `authuser` parameter to URLs based on the domain, ensuring you're always using your preferred account for each Google service.
@@ -20,10 +17,6 @@ If you use multiple Google accounts (personal, work, school), you know the frust
 - **Privacy-Focused**: No data collection, all settings stored locally in your browser
 
 ## Installation
-
-### From Chrome Web Store
-1. Visit the [Chrome Web Store](https://chrome.google.com/webstore/) and search for "Preferred Google Login"
-2. Click "Add to Chrome"
 
 ### Manual Installation (Developer Mode)
 1. Download or clone this repository:
@@ -139,7 +132,29 @@ npm run format
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+```
+MIT License
+
+Copyright (c) 2025 Rohan Dhamapurkar
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
 
 ## Contact
 
