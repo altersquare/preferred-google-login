@@ -1,8 +1,8 @@
 {
 	"manifest_version": 3,
-	"name": "Default Google User",
-	"version": "5.0",
-	"description": "Adds the authuser parameter to domain.",
+	"name": "Preferred Google Login",
+	"version": "5.0.0",
+	"description": "Automatically use your preferred Google account for each Google service. No more switching between accounts!",
 	"permissions": [
 		"scripting",
 		"storage"
@@ -17,12 +17,16 @@
 		"default_popup": "src/popup.html"
 	},
 	"host_permissions": [
-		"*://*/*"
+		"*://*.google.com/*",
+		"*://*.youtube.com/*",
+		"*://*.ai.google/*"
 	],
 	"content_scripts": [
 		{
 			"matches": [
-				"<all_urls>"
+				"*://*.google.com/*",
+				"*://*.youtube.com/*",
+				"*://*.ai.google/*"
 			],
 			"js": [
 				"src/content.js"
