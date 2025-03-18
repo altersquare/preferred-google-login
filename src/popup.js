@@ -67,7 +67,7 @@ async function handleDOMLoad() {
 	let { domainEmails } = await getFromStorage("domainEmails");
 
 	// Set default domainEmails if none exist
-	if (domainEmails === undefined) {
+	if (domainEmails === undefined || Object.keys(domainEmails).length === 0) {
 		domainEmails = {
 			"youtube.com": "user@gmail.com",
 		};
