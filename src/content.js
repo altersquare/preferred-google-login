@@ -32,35 +32,40 @@
 	}
 })();
 
-/**
- * Adds the authuser parameter to the URL if it's not already present.
- * Prevents infinite redirect loops by checking if the parameter has already been added in the current session.
- * @param {string} authUserEmail The email address to use for the authuser parameter.
- */
+// Sets the authuser parameter in the URL for authentication purposes, 
+// ensuring it only happens once per domain per session
 async function setAuthUser(authUserEmail) {
-	const data = await getFromStorage(window.location.hostname); // Check if already set for this domain
+    // Retrieve storage data for the current domain to check if we've already processed it
+    const data = await getFromStorage(window.location.hostname); 
 
-	if (data[window.location.hostname]) {
-		// If already set in this session for this domain, remove the flag and exit.
-		await removeFromStorage(window.location.hostname);
-		return;
-	}
+    // If the domain is already flagged in storage (processed this session), 
+    // remove the flag and exit without modifying the URL
+    if (data[window.location.hostname]) {
+        await removeFromStorage(window.location.hostname); // Clean up the storage flag
+        return; // Exit the function early
+    }
 
-	await setStorage(window.location.hostname, true); // Set a flag in storage indicating that we have modified this domain
+    // Set a flag in storage to mark this domain as processed for this session
+    await setStorage(window.location.hostname, true); 
 
-	const currentURL = window.location.href;
-	const authuserParam = "authuser=" + authUserEmail;
+    // Get the current full URL and store it for modification
+    let currentURL = window.location.href;
 
-	// Check if the authuser parameter is already present in the URL.
-	if (currentURL.includes(authuserParam)) {
-		console.log("Authuser parameter already present.");
-		return;
-	}
+    // Check for and remove any Google-specific user segment (e.g., /u/2) from the URL
+    if (currentURL.match(/\/u\/\d+/)) {
+        currentURL = currentURL.replace(/\/u\/\d+/, ''); // Strip out /u/[number] pattern
+    }
 
-	// Add the authuser parameter to the URL.
-	let newURL = currentURL.replace(/(\.com).*/, "$1") + "?" + authuserParam; // Add with ? if no query params are present
+    // Construct the authuser query parameter using the provided email
+    const authuserParam = "authuser=" + authUserEmail;
 
-	window.location.href = newURL; // Redirect to the new URL.
+    // If the authuser parameter is already in the URL, log it and exit without changes
+    if (currentURL.includes(authuserParam)) {
+        console.log("Authuser parameter already present."); // Inform the developer
+        return; // Exit the function early
+    }
+
+    window.location.href = currentURL + (currentURL.includes('?') ? '&' : '?') + authuserParam;
 }
 
 /**
