@@ -3,15 +3,22 @@
 	try {
 		// Retrieve stored settings from Chrome storage.
 		const { isEnabled } = await getFromStorage("isEnabled"); // Get whether the extension is enabled.
-		const { domainEmails } = await getFromStorage("domainEmails"); // Get the domain-email pairs.
+		let { domainEmails } = await getFromStorage("domainEmails"); // Get the domain-email pairs.
 
 		// If on a Chrome internal page (e.g., extensions page), exit.
 		if (window.location.protocol === "chrome:") return;
 
-		// If the extension is explicitly disabled, exit.
-		if (isEnabled !== undefined && !isEnabled) {
+		// If the extension is explicitly disabled or not enabled yet (value undefined), then exit.
+		if (!isEnabled) {
 			console.log("Extension is disabled.");
 			return;
+		}
+
+		if (!domainEmails || !Object.keys(domainEmails).length) {
+			domainEmails = {
+				"youtube.com": "user@gmail.com",
+			};
+			await setStorage("domainEmails", domainEmails);
 		}
 
 		// Check if the current URL's hostname is in the allowed domains list.
@@ -26,46 +33,47 @@
 		}
 
 		// Add the authuser parameter to the URL.
-		setAuthUser(domainEmails[emailForDomain]);
+		await setAuthUser(domainEmails[emailForDomain]);
 	} catch (error) {
 		console.error("Error:", error); // Log any errors.
 	}
 })();
 
-// Sets the authuser parameter in the URL for authentication purposes, 
-// ensuring it only happens once per domain per session
 async function setAuthUser(authUserEmail) {
-    // Retrieve storage data for the current domain to check if we've already processed it
-    const data = await getFromStorage(window.location.hostname); 
+	// Retrieve storage data for the current domain to check if we've already processed it
+	const data = await getFromStorage(window.location.hostname);
 
-    // If the domain is already flagged in storage (processed this session), 
-    // remove the flag and exit without modifying the URL
-    if (data[window.location.hostname]) {
-        await removeFromStorage(window.location.hostname); // Clean up the storage flag
-        return; // Exit the function early
-    }
+	// If the domain is already flagged in storage (processed this session),
+	// remove the flag and exit without modifying the URL
+	if (data.hasOwnProperty(window.location.hostname)) {
+		await removeFromStorage(window.location.hostname);
+		console.log("Auth User was already added.");
+		return; // Exit the function early
+	}
 
-    // Set a flag in storage to mark this domain as processed for this session
-    await setStorage(window.location.hostname, true); 
+	// Get the current full URL and store it for modification
+	let currentURL = window.location.href;
 
-    // Get the current full URL and store it for modification
-    let currentURL = window.location.href;
+	// Check for and remove any Google-specific user segment (e.g., /u/2) from the URL
+	if (currentURL.match(/\/u\/\d+/)) {
+		currentURL = currentURL.replace(/\/u\/\d+/, ""); // Strip out /u/[number] pattern
+	}
 
-    // Check for and remove any Google-specific user segment (e.g., /u/2) from the URL
-    if (currentURL.match(/\/u\/\d+/)) {
-        currentURL = currentURL.replace(/\/u\/\d+/, ''); // Strip out /u/[number] pattern
-    }
+	// Construct the authuser query parameter using the provided email
+	const authuserParam = "authuser=" + authUserEmail;
 
-    // Construct the authuser query parameter using the provided email
-    const authuserParam = "authuser=" + authUserEmail;
+	// If the authuser parameter is already in the URL, log it and exit without changes
+	if (currentURL.includes(authuserParam)) {
+		// console.log("Authuser parameter already present."); // Inform the developer
+		return; // Exit the function early
+	}
 
-    // If the authuser parameter is already in the URL, log it and exit without changes
-    if (currentURL.includes(authuserParam)) {
-        console.log("Authuser parameter already present."); // Inform the developer
-        return; // Exit the function early
-    }
+	// Set a flag in storage to mark this domain as processed for this session
+	if (!data.hasOwnProperty(window.location.hostname))
+		await setStorage(window.location.hostname, true);
 
-    window.location.href = currentURL + (currentURL.includes('?') ? '&' : '?') + authuserParam;
+	window.location.href =
+		currentURL + (currentURL.includes("?") ? "&" : "?") + authuserParam;
 }
 
 /**
@@ -86,7 +94,7 @@ function validateAndMutateKey(key) {
  */
 async function getFromStorage(key) {
 	let storageKey = validateAndMutateKey(key); // Validate the key.
-	return await chrome.storage.local.get([storageKey]);
+	return await chrome.storage.sync.get([storageKey]);
 }
 
 /**
@@ -96,7 +104,7 @@ async function getFromStorage(key) {
  */
 async function removeFromStorage(key) {
 	let storageKey = validateAndMutateKey(key); // Validate the key.
-	return await chrome.storage.local.remove(storageKey);
+	return await chrome.storage.sync.remove(storageKey);
 }
 
 /**
@@ -107,5 +115,5 @@ async function removeFromStorage(key) {
  */
 async function setStorage(key, value) {
 	let storageKey = validateAndMutateKey(key); // Validate the key.
-	return await chrome.storage.local.set({ [storageKey]: value });
+	return await chrome.storage.sync.set({ [storageKey]: value });
 }

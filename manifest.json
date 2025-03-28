@@ -1,11 +1,12 @@
 {
 	"manifest_version": 3,
 	"name": "Preferred Google Login",
-	"version": "5.0.1",
+	"version": "5.0.2",
 	"description": "Automatically use your preferred Google account for each Google service. No more switching between accounts!",
 	"permissions": [
 		"scripting",
-		"storage"
+		"storage",
+		"tabs"
 	],
 	"icons": {
 		"16": "icons/icon16.png",

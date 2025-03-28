@@ -10,4 +10,9 @@ export default [
 		},
 	},
 	pluginJs.configs.recommended,
+	{
+		rules: {
+			"no-prototype-builtins": "off",
+		},
+	},
 ];
