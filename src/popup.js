@@ -45,7 +45,8 @@ async function handleDOMLoad() {
 
 	// Load the toggle state from storage
 	let { isEnabled } = await getFromStorage("isEnabled");
-	toggle.checked = isEnabled === undefined ? true : isEnabled;
+	if (!isEnabled) isEnabled = false;
+	toggle.checked = isEnabled;
 
 	// Save the toggle state when it changes
 	toggle.addEventListener("change", async () => {
@@ -67,7 +68,7 @@ async function handleDOMLoad() {
 	let { domainEmails } = await getFromStorage("domainEmails");
 
 	// Set default domainEmails if none exist
-	if (domainEmails === undefined || Object.keys(domainEmails).length === 0) {
+	if (!domainEmails || !Object.keys(domainEmails).length) {
 		domainEmails = {
 			"youtube.com": "user@gmail.com",
 		};
@@ -150,9 +151,16 @@ function addDomainEmailPair(container, domain = "", email = "") {
 	removeButton.innerHTML = "&times;";
 	removeButton.addEventListener("click", async () => {
 		const domain = domainInput.value.trim();
-		const { domainEmails } = await getFromStorage("domainEmails");
-		delete domainEmails[domain];
-		await setStorage("domainEmails", domainEmails);
+		let { domainEmails } = await getFromStorage("domainEmails");
+		if (domainEmails) {
+			delete domainEmails[domain];
+		}
+		if (!domainEmails || !Object.keys(domainEmails).length) {
+			domainEmails = {
+				"youtube.com": "user@gmail.com",
+			};
+			await setStorage("domainEmails", domainEmails);
+		}
 		container.removeChild(domainEmailContainer);
 		enableSaveButton();
 	});
@@ -178,7 +186,7 @@ function addDomainEmailPair(container, domain = "", email = "") {
 
 	// Listen for input events to update button state
 	domainInput.addEventListener("input", checkInputs);
-	emailInput.addEventListener("input", checkInputs); 
+	emailInput.addEventListener("input", checkInputs);
 	// Call checkInputs initially to disable button if inputs are empty
 	checkInputs();
 
@@ -340,13 +348,14 @@ async function handleSaveClick() {
 		console.error("No active tab found");
 		return;
 	}
+	if (tabs[0].url.includes("chrome:")) return;
+
 	await chrome.scripting.executeScript({
 		target: { tabId: tabs[0].id },
 		function: () => {
 			window.location.reload();
 		},
 	});
-	window.close();
 }
 
 function validateAndMutateKey(key) {
@@ -356,12 +365,12 @@ function validateAndMutateKey(key) {
 
 async function getFromStorage(key) {
 	let storageKey = validateAndMutateKey(key);
-	return await chrome.storage.local.get([storageKey]);
+	return await chrome.storage.sync.get([storageKey]);
 }
 
 async function setStorage(key, value) {
 	let storageKey = validateAndMutateKey(key);
-	return await chrome.storage.local.set({ [storageKey]: value });
+	return await chrome.storage.sync.set({ [storageKey]: value });
 }
 
 function enableSaveButton() {
