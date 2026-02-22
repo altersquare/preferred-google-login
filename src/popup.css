@@ -132,7 +132,7 @@ body {
 	border-radius: var(--md-sys-shape-corner-medium);
 	padding: 16px;
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	gap: 16px;
 	border: 1px solid var(--md-sys-color-outline-variant);
 	transition:
@@ -141,6 +141,55 @@ body {
 		border-color var(--md-sys-motion-duration-short2)
 			var(--md-sys-motion-easing-standard);
 	/* Removed transform to avoid premature stacking context creation */
+}
+
+.content-wrapper {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	gap: 12px;
+}
+
+.inputs-row {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	width: 100%;
+}
+
+.days-row {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.day-btn {
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	border: 1px solid var(--md-sys-color-outline);
+	background-color: transparent;
+	color: var(--md-sys-color-on-surface-variant);
+	font-family: var(--md-sys-typescale-label-large-font);
+	font-size: 11px;
+	font-weight: 500;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	padding: 0;
+	flex: none;
+	transition: all var(--md-sys-motion-duration-short2);
+}
+
+.day-btn.selected {
+	background-color: var(--md-sys-color-primary);
+	color: var(--md-sys-color-on-primary);
+	border-color: var(--md-sys-color-primary);
+}
+
+.day-btn:hover:not(.selected) {
+	background-color: var(--md-sys-color-surface-variant);
 }
 
 .domain-email-container:hover {
