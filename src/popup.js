@@ -70,7 +70,7 @@ async function handleDOMLoad() {
 	// Set default domainEmails if none exist
 	if (!domainEmails || !Object.keys(domainEmails).length) {
 		domainEmails = {
-			"youtube.com": "user@gmail.com",
+			"youtube.com": { email: "user@gmail.com", enabled: true },
 		};
 		await setStorage("domainEmails", domainEmails);
 	}
@@ -90,19 +90,45 @@ function getKeyFromDomain(domain) {
 function populateDomainEmailList(container, domainEmails, saveButton) {
 	container.innerHTML = "";
 
-	for (const [domain, email] of Object.entries(domainEmails)) {
+	for (const [domain, value] of Object.entries(domainEmails)) {
+		// Handle legacy format (string) vs new format (object)
+		const email = typeof value === "string" ? value : value.email;
+		const enabled = typeof value === "string" ? true : value.enabled;
+
 		addDomainEmailPair(
 			container,
 			getKeyFromDomain(domain),
 			email,
+			enabled,
 			saveButton
 		);
 	}
 }
 
-function addDomainEmailPair(container, domain = "", email = "") {
+function addDomainEmailPair(
+	container,
+	domain = "",
+	email = "",
+	enabled = true
+) {
 	const domainEmailContainer = document.createElement("div");
 	domainEmailContainer.className = "domain-email-container";
+
+	// Toggle Switch
+	const toggleWrapper = document.createElement("label");
+	toggleWrapper.className = "switch";
+	const toggleInput = document.createElement("input");
+	toggleInput.type = "checkbox";
+	toggleInput.checked = enabled;
+	toggleInput.addEventListener("change", enableSaveButton);
+
+	const slider = document.createElement("span");
+	slider.className = "slider round";
+
+	toggleWrapper.appendChild(toggleInput);
+	toggleWrapper.appendChild(slider);
+
+	domainEmailContainer.appendChild(toggleWrapper);
 
 	const listContainer = document.createElement("div");
 	listContainer.className = "input-domain-container"; // Add class for styling
@@ -145,10 +171,11 @@ function addDomainEmailPair(container, domain = "", email = "") {
 
 	domainEmailContainer.appendChild(emailContainer);
 
-	// Remove button with cross icon
+	// Remove button with trash icon
 	const removeButton = document.createElement("div");
 	removeButton.className = "remove-button";
-	removeButton.innerHTML = "&times;";
+	removeButton.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+	removeButton.title = "Remove";
 	removeButton.addEventListener("click", async () => {
 		const domain = domainInput.value.trim();
 		let { domainEmails } = await getFromStorage("domainEmails");
@@ -157,7 +184,7 @@ function addDomainEmailPair(container, domain = "", email = "") {
 		}
 		if (!domainEmails || !Object.keys(domainEmails).length) {
 			domainEmails = {
-				"youtube.com": "user@gmail.com",
+				"youtube.com": { email: "user@gmail.com", enabled: true },
 			};
 			await setStorage("domainEmails", domainEmails);
 		}
@@ -284,9 +311,13 @@ async function handleSaveClick() {
 		const emailInput = container.querySelector(
 			".input-email-container input"
 		);
+		const toggleInput = container.querySelector(
+			".switch input[type='checkbox']"
+		);
 
 		const domain = domainInput.value.trim();
 		const email = emailInput.value.trim();
+		const enabled = toggleInput ? toggleInput.checked : true;
 
 		// Check if domain exists in googleDomains
 		if (!(domain in googleDomains)) {
@@ -334,7 +365,7 @@ async function handleSaveClick() {
 		}
 
 		// Save the domain-email pair
-		domainEmails[mappedDomain] = email;
+		domainEmails[mappedDomain] = { email, enabled };
 	});
 
 	if (!isValid) {

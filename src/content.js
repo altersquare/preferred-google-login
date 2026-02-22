@@ -22,18 +22,34 @@
 		}
 
 		// Check if the current URL's hostname is in the allowed domains list.
-		const emailForDomain = Object.keys(domainEmails).find((domain) =>
+		const matchedDomain = Object.keys(domainEmails).find((domain) =>
 			window.location.hostname.includes(domain)
 		);
 
 		// If the domain is not allowed or no email is set for it, exit.
-		if (!emailForDomain) {
+		if (!matchedDomain) {
 			console.log("Domain not allowed or no email set for this domain.");
 			return;
 		}
 
+		const domainSetting = domainEmails[matchedDomain];
+		let email, enabled;
+
+		if (typeof domainSetting === "string") {
+			email = domainSetting;
+			enabled = true;
+		} else {
+			email = domainSetting.email;
+			enabled = domainSetting.enabled;
+		}
+
+		if (!enabled) {
+			console.log("Extension is disabled for this domain.");
+			return;
+		}
+
 		// Add the authuser parameter to the URL.
-		await setAuthUser(domainEmails[emailForDomain]);
+		await setAuthUser(email);
 	} catch (error) {
 		console.error("Error:", error); // Log any errors.
 	}
