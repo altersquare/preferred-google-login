@@ -123,7 +123,7 @@ function addDomainEmailPair(
 	toggleInput.addEventListener("change", enableSaveButton);
 
 	const slider = document.createElement("span");
-	slider.className = "slider round";
+	slider.className = "slider"; // Removed 'round' as border-radius is handled in CSS
 
 	toggleWrapper.appendChild(toggleInput);
 	toggleWrapper.appendChild(slider);
@@ -133,19 +133,20 @@ function addDomainEmailPair(
 	const listContainer = document.createElement("div");
 	listContainer.className = "input-domain-container"; // Add class for styling
 
-	// Domain input with datalist for autocomplete
+	// Domain input with custom dropdown
 	const domainInput = document.createElement("input");
 	domainInput.className = "domain-input";
 	domainInput.type = "text";
-	domainInput.placeholder = "Search or select domain...";
+	domainInput.placeholder = "Select service...";
 	domainInput.value = domain;
-	domainInput.setAttribute("list", "domain-list");
+	// Remove native autocomplete
+	domainInput.setAttribute("autocomplete", "off");
 	listContainer.appendChild(domainInput);
 
-	// Datalist for autocomplete suggestions
-	const domainDataList = document.createElement("datalist");
-	domainDataList.id = domainInput.getAttribute("list");
-	listContainer.appendChild(domainDataList);
+	// Custom dropdown container
+	const dropdownList = document.createElement("div");
+	dropdownList.className = "dropdown-list";
+	listContainer.appendChild(dropdownList);
 
 	const domainErrorMessage = document.createElement("div");
 	domainErrorMessage.className = "error-message";
@@ -174,7 +175,7 @@ function addDomainEmailPair(
 	// Remove button with trash icon
 	const removeButton = document.createElement("div");
 	removeButton.className = "remove-button";
-	removeButton.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+	removeButton.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
 	removeButton.title = "Remove";
 	removeButton.addEventListener("click", async () => {
 		const domain = domainInput.value.trim();
@@ -234,39 +235,67 @@ function addDomainEmailPair(
 		}
 	});
 
-	// Populate datalist with formatted options
-	function updateDataList(inputValue = "") {
-		domainDataList.innerHTML = "";
+	// Populate dropdown with options
+	function updateDropdown(inputValue = "") {
+		dropdownList.innerHTML = "";
+		let hasMatches = false;
+
 		Object.entries(googleDomains).forEach(([key, value]) => {
 			if (
 				key.toLowerCase().includes(inputValue.toLowerCase()) ||
 				value.toLowerCase().includes(inputValue.toLowerCase())
 			) {
-				const option = document.createElement("option");
-				option.value = `${key} (${value})`;
-				domainDataList.appendChild(option);
+				hasMatches = true;
+				const item = document.createElement("div");
+				item.className = "dropdown-item";
+				item.innerHTML = `<strong>${
+					key.charAt(0).toUpperCase() + key.slice(1)
+				}</strong> <small>(${value})</small>`;
+
+				item.addEventListener("mousedown", (e) => {
+					e.preventDefault(); // Prevent input blur
+					domainInput.value = key;
+					dropdownList.classList.remove("show");
+					domainEmailContainer.classList.remove("active-editing");
+					checkInputs();
+					validateDomain(); // Trigger validation
+				});
+
+				dropdownList.appendChild(item);
 			}
 		});
+
+		if (hasMatches) {
+			dropdownList.classList.add("show");
+			// Lift the parent container above others
+			domainEmailContainer.classList.add("active-editing");
+		} else {
+			dropdownList.classList.remove("show");
+			domainEmailContainer.classList.remove("active-editing");
+		}
 	}
 
-	updateDataList();
+	// Input event listeners
+	domainInput.addEventListener("focus", () => {
+		updateDropdown(domainInput.value.trim());
+	});
 
-	// Validation for duplicate domains
 	domainInput.addEventListener("input", () => {
-		enableSaveButton();
-		const inputValue = domainInput.value.trim();
+		updateDropdown(domainInput.value.trim());
+		checkInputs();
+		validateDomain();
+	});
 
-		// Update suggestions based on input
-		updateDataList(inputValue);
-
-		// If input matches a formatted option, extract the key
-		const match = Object.entries(googleDomains).find(
-			([key, value]) =>
-				`${key} (${value})`.toLowerCase() === inputValue.toLowerCase()
-		);
-		if (match) {
-			domainInput.value = match[0]; // Set only the key
+	// Close dropdown when clicking outside
+	document.addEventListener("click", (e) => {
+		if (!listContainer.contains(e.target)) {
+			dropdownList.classList.remove("show");
+			domainEmailContainer.classList.remove("active-editing");
 		}
+	});
+
+	function validateDomain() {
+		const inputValue = domainInput.value.trim();
 
 		const domains = Array.from(
 			container.querySelectorAll(".domain-input")
@@ -278,17 +307,18 @@ function addDomainEmailPair(
 		domainErrorMessage.textContent = "";
 		domainErrorMessage.style.display = "none";
 
-		if (!domainInput.value) {
+		if (!inputValue) {
 			domainErrorMessage.textContent = "Domain is required";
 			domainErrorMessage.style.display = "block";
-		} else if (!(domainInput.value in googleDomains)) {
-			domainErrorMessage.textContent = "Invalid domain name";
+		} else if (!(inputValue in googleDomains)) {
+			domainErrorMessage.textContent = "Invalid service";
 			domainErrorMessage.style.display = "block";
 		} else if (isDuplicate) {
-			domainErrorMessage.textContent = "Domain already exists";
+			domainErrorMessage.textContent = "Already added";
 			domainErrorMessage.style.display = "block";
 		}
-	});
+		enableSaveButton();
+	}
 }
 
 function validateEmail(email) {
