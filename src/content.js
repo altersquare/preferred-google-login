@@ -56,40 +56,44 @@
 })();
 
 async function setAuthUser(authUserEmail) {
-	// Retrieve storage data for the current domain to check if we've already processed it
-	const data = await getFromStorage(window.location.hostname);
+	const LOOP_FLAG_KEY = "pgl_redirect_flag";
 
-	// If the domain is already flagged in storage (processed this session),
-	// remove the flag and exit without modifying the URL
-	if (data.hasOwnProperty(window.location.hostname)) {
-		await removeFromStorage(window.location.hostname);
-		console.log("Auth User was already added.");
-		return; // Exit the function early
+	// Check if we just redirected to prevent loops
+	if (sessionStorage.getItem(LOOP_FLAG_KEY)) {
+		sessionStorage.removeItem(LOOP_FLAG_KEY);
+		// console.log("Redirect loop prevention triggered.");
+		return;
 	}
 
-	// Get the current full URL and store it for modification
-	let currentURL = window.location.href;
+	try {
+		const url = new URL(window.location.href);
+		let modified = false;
 
-	// Check for and remove any Google-specific user segment (e.g., /u/2) from the URL
-	if (currentURL.match(/\/u\/\d+/)) {
-		currentURL = currentURL.replace(/\/u\/\d+/, ""); // Strip out /u/[number] pattern
+		// 1. Handle path-based authuser (e.g., /u/0, /u/1)
+		// We use a regex to match /u/DIGITS in the pathname
+		if (/\/u\/\d+/.test(url.pathname)) {
+			url.pathname = url.pathname.replace(/\/u\/\d+/, "");
+			modified = true;
+		}
+
+		// 2. Handle query-based authuser
+		const currentAuthUser = url.searchParams.get("authuser");
+
+		// If the authuser param is missing or different from the preferred email
+		if (currentAuthUser !== authUserEmail) {
+			url.searchParams.set("authuser", authUserEmail);
+			modified = true;
+		}
+
+		// If we made changes (either path or query param), redirect
+		if (modified) {
+			// Set a session flag so we know this redirect was intentional
+			sessionStorage.setItem(LOOP_FLAG_KEY, "true");
+			window.location.href = url.toString();
+		}
+	} catch (error) {
+		console.error("Error setting authuser:", error);
 	}
-
-	// Construct the authuser query parameter using the provided email
-	const authuserParam = "authuser=" + authUserEmail;
-
-	// If the authuser parameter is already in the URL, log it and exit without changes
-	if (currentURL.includes(authuserParam)) {
-		// console.log("Authuser parameter already present."); // Inform the developer
-		return; // Exit the function early
-	}
-
-	// Set a flag in storage to mark this domain as processed for this session
-	if (!data.hasOwnProperty(window.location.hostname))
-		await setStorage(window.location.hostname, true);
-
-	window.location.href =
-		currentURL + (currentURL.includes("?") ? "&" : "?") + authuserParam;
 }
 
 /**
