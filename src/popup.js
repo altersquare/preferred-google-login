@@ -70,7 +70,11 @@ async function handleDOMLoad() {
 	// Set default domainEmails if none exist
 	if (!domainEmails || !Object.keys(domainEmails).length) {
 		domainEmails = {
-			"youtube.com": { email: "user@gmail.com", enabled: true },
+			"youtube.com": {
+				email: "user@gmail.com",
+				enabled: true,
+				days: [0, 1, 2, 3, 4, 5, 6],
+			},
 		};
 		await setStorage("domainEmails", domainEmails);
 	}
@@ -94,13 +98,18 @@ function populateDomainEmailList(container, domainEmails, saveButton) {
 		// Handle legacy format (string) vs new format (object)
 		const email = typeof value === "string" ? value : value.email;
 		const enabled = typeof value === "string" ? true : value.enabled;
+		// Default to all days (0-6) if not specified
+		const days =
+			typeof value === "string" || !value.days
+				? [0, 1, 2, 3, 4, 5, 6]
+				: value.days;
 
 		addDomainEmailPair(
 			container,
 			getKeyFromDomain(domain),
 			email,
 			enabled,
-			saveButton
+			days
 		);
 	}
 }
@@ -109,7 +118,8 @@ function addDomainEmailPair(
 	container,
 	domain = "",
 	email = "",
-	enabled = true
+	enabled = true,
+	days = [0, 1, 2, 3, 4, 5, 6]
 ) {
 	const domainEmailContainer = document.createElement("div");
 	domainEmailContainer.className = "domain-email-container";
@@ -129,6 +139,14 @@ function addDomainEmailPair(
 	toggleWrapper.appendChild(slider);
 
 	domainEmailContainer.appendChild(toggleWrapper);
+
+	// Content Wrapper (Inputs + Days)
+	const contentWrapper = document.createElement("div");
+	contentWrapper.className = "content-wrapper";
+
+	// Inputs Row
+	const inputsRow = document.createElement("div");
+	inputsRow.className = "inputs-row";
 
 	const listContainer = document.createElement("div");
 	listContainer.className = "input-domain-container"; // Add class for styling
@@ -153,7 +171,7 @@ function addDomainEmailPair(
 	domainErrorMessage.textContent = "";
 	listContainer.appendChild(domainErrorMessage);
 
-	domainEmailContainer.appendChild(listContainer);
+	inputsRow.appendChild(listContainer);
 
 	const emailContainer = document.createElement("div");
 	emailContainer.className = "input-email-container"; // Add class for styling
@@ -170,7 +188,7 @@ function addDomainEmailPair(
 	emailErrorMessage.textContent = "";
 	emailContainer.appendChild(emailErrorMessage);
 
-	domainEmailContainer.appendChild(emailContainer);
+	inputsRow.appendChild(emailContainer);
 
 	// Remove button with trash icon
 	const removeButton = document.createElement("div");
@@ -185,14 +203,56 @@ function addDomainEmailPair(
 		}
 		if (!domainEmails || !Object.keys(domainEmails).length) {
 			domainEmails = {
-				"youtube.com": { email: "user@gmail.com", enabled: true },
+				"youtube.com": {
+					email: "user@gmail.com",
+					enabled: true,
+					days: [0, 1, 2, 3, 4, 5, 6],
+				},
 			};
 			await setStorage("domainEmails", domainEmails);
 		}
 		container.removeChild(domainEmailContainer);
 		enableSaveButton();
 	});
-	domainEmailContainer.appendChild(removeButton);
+	inputsRow.appendChild(removeButton);
+
+	contentWrapper.appendChild(inputsRow);
+
+	// Days Row
+	const daysRow = document.createElement("div");
+	daysRow.className = "days-row";
+
+	const dayLabels = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+	const fullDayNames = [
+		"Sunday",
+		"Monday",
+		"Tuesday",
+		"Wednesday",
+		"Thursday",
+		"Friday",
+		"Saturday",
+	];
+
+	dayLabels.forEach((label, index) => {
+		const btn = document.createElement("button");
+		btn.className = "day-btn";
+		btn.textContent = label;
+		btn.dataset.day = index;
+		btn.title = fullDayNames[index];
+		btn.type = "button"; // Prevent form submission behavior
+		if (days.includes(index)) {
+			btn.classList.add("selected");
+		}
+		btn.addEventListener("click", () => {
+			btn.classList.toggle("selected");
+			enableSaveButton();
+		});
+		daysRow.appendChild(btn);
+	});
+
+	contentWrapper.appendChild(daysRow);
+
+	domainEmailContainer.appendChild(contentWrapper);
 
 	// Add the row to the container
 	container.appendChild(domainEmailContainer);
@@ -394,29 +454,51 @@ async function handleSaveClick() {
 			return;
 		}
 
+		// Get selected days
+		const dayBtns = container.querySelectorAll(".day-btn.selected");
+		const days = Array.from(dayBtns)
+			.map((btn) => parseInt(btn.dataset.day))
+			.sort((a, b) => a - b);
+
 		// Save the domain-email pair
-		domainEmails[mappedDomain] = { email, enabled };
+		domainEmails[mappedDomain] = { email, enabled, days };
 	});
 
 	if (!isValid) {
 		return;
 	}
 
-	await setStorage("domainEmails", domainEmails);
+	try {
+		await setStorage("domainEmails", domainEmails);
 
-	let tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-	if (!tabs || tabs.length === 0) {
-		console.error("No active tab found");
-		return;
+		let tabs = await chrome.tabs.query({
+			active: true,
+			currentWindow: true,
+		});
+		if (!tabs || tabs.length === 0) {
+			console.error("No active tab found");
+			return;
+		}
+		if (tabs[0].url.includes("chrome:")) return;
+
+		await chrome.scripting.executeScript({
+			target: { tabId: tabs[0].id },
+			function: () => {
+				window.location.reload();
+			},
+		});
+	} catch (error) {
+		console.error("Failed to save settings:", error);
+		// Optionally show an error to the user
+		const saveButton = document.getElementById("saveButton");
+		const originalText = saveButton.textContent;
+		saveButton.textContent = "Error Saving";
+		saveButton.classList.add("disabled");
+		setTimeout(() => {
+			saveButton.textContent = originalText;
+			saveButton.classList.remove("disabled");
+		}, 2000);
 	}
-	if (tabs[0].url.includes("chrome:")) return;
-
-	await chrome.scripting.executeScript({
-		target: { tabId: tabs[0].id },
-		function: () => {
-			window.location.reload();
-		},
-	});
 }
 
 function validateAndMutateKey(key) {

@@ -33,18 +33,27 @@
 		}
 
 		const domainSetting = domainEmails[matchedDomain];
-		let email, enabled;
+		let email, enabled, days;
 
 		if (typeof domainSetting === "string") {
 			email = domainSetting;
 			enabled = true;
+			days = [0, 1, 2, 3, 4, 5, 6];
 		} else {
 			email = domainSetting.email;
 			enabled = domainSetting.enabled;
+			days = domainSetting.days || [0, 1, 2, 3, 4, 5, 6];
 		}
 
 		if (!enabled) {
 			console.log("Extension is disabled for this domain.");
+			return;
+		}
+
+		// Check if the rule applies to the current day
+		const currentDay = new Date().getDay(); // 0 (Sunday) to 6 (Saturday)
+		if (!days.includes(currentDay)) {
+			console.log("Rule is not active for today.");
 			return;
 		}
 
