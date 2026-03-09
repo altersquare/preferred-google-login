@@ -77,19 +77,38 @@ async function setAuthUser(authUserEmail) {
 	try {
 		const url = new URL(window.location.href);
 		let modified = false;
-
-		// 1. Handle path-based authuser (e.g., /u/0, /u/1)
-		// We use a regex to match /u/DIGITS in the pathname
-		if (/\/u\/\d+/.test(url.pathname)) {
-			url.pathname = url.pathname.replace(/\/u\/\d+/, "");
-			modified = true;
-		}
-
-		// 2. Handle query-based authuser
+		const hasPathAuthUser = /\/u\/\d+/.test(url.pathname);
+		const pathAuthUserAttemptKey = `pgl_path_authuser_attempt:${url.hostname}${url.pathname}`;
+		const hasPathAuthUserAttempt = sessionStorage.getItem(
+			pathAuthUserAttemptKey
+		);
 		const currentAuthUser = url.searchParams.get("authuser");
+		const normalizedCurrentAuthUser = currentAuthUser
+			? currentAuthUser.toLowerCase()
+			: "";
+		const normalizedPreferredAuthUser = authUserEmail.toLowerCase();
+		const isCurrentAuthUserEmail =
+			!!currentAuthUser && currentAuthUser.includes("@");
 
-		// If the authuser param is missing or different from the preferred email
-		if (currentAuthUser !== authUserEmail) {
+		if (hasPathAuthUser) {
+			if (
+				!hasPathAuthUserAttempt &&
+				(!currentAuthUser ||
+					(isCurrentAuthUserEmail &&
+						normalizedCurrentAuthUser !==
+							normalizedPreferredAuthUser))
+			) {
+				url.searchParams.set("authuser", authUserEmail);
+				modified = true;
+				sessionStorage.setItem(pathAuthUserAttemptKey, "true");
+			}
+		} else if (!currentAuthUser) {
+			url.searchParams.set("authuser", authUserEmail);
+			modified = true;
+		} else if (
+			isCurrentAuthUserEmail &&
+			normalizedCurrentAuthUser !== normalizedPreferredAuthUser
+		) {
 			url.searchParams.set("authuser", authUserEmail);
 			modified = true;
 		}
@@ -124,16 +143,6 @@ function validateAndMutateKey(key) {
 async function getFromStorage(key) {
 	let storageKey = validateAndMutateKey(key); // Validate the key.
 	return await chrome.storage.sync.get([storageKey]);
-}
-
-/**
- * Removes data from Chrome local storage.
- * @param {string} key The key to remove.
- * @returns {Promise<void>} A promise that resolves when the data is removed.
- */
-async function removeFromStorage(key) {
-	let storageKey = validateAndMutateKey(key); // Validate the key.
-	return await chrome.storage.sync.remove(storageKey);
 }
 
 /**
