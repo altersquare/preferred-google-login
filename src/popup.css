@@ -163,6 +163,49 @@ body {
 	align-items: center;
 }
 
+.time-row {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.time-toggle-label {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	width: fit-content;
+	color: var(--md-sys-color-on-surface-variant);
+	font-family: var(--md-sys-typescale-label-large-font);
+	font-size: var(--md-sys-typescale-label-large-size);
+	font-weight: var(--md-sys-typescale-label-large-weight);
+	cursor: pointer;
+}
+
+.time-toggle {
+	margin: 0;
+	accent-color: var(--md-sys-color-primary);
+	width: 16px;
+	height: 16px;
+	flex: none;
+}
+
+.time-fields {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.time-fields.hidden {
+	display: none;
+}
+
+.time-separator {
+	color: var(--md-sys-color-on-surface-variant);
+	font-family: var(--md-sys-typescale-body-medium-font);
+	font-size: var(--md-sys-typescale-body-medium-size);
+}
+
 .day-btn {
 	width: 28px;
 	height: 28px;
@@ -286,7 +329,8 @@ input:checked:hover + .slider:before {
 	flex: 2; /* Longer emails need more space */
 }
 
-input[type="text"] {
+input[type="text"],
+input[type="time"] {
 	width: 100%;
 	height: 48px; /* Slightly reduced from 56px */
 	padding: 0 16px;
@@ -300,7 +344,8 @@ input[type="text"] {
 	transition: border-color var(--md-sys-motion-duration-short2);
 }
 
-input[type="text"]:focus {
+input[type="text"]:focus,
+input[type="time"]:focus {
 	outline: none;
 	border-color: var(--md-sys-color-primary);
 	border-width: 2px;
@@ -310,6 +355,13 @@ input[type="text"]:focus {
 input[type="text"]::placeholder {
 	color: var(--md-sys-color-on-surface-variant);
 	opacity: 0.7;
+}
+
+.time-input {
+	width: 140px;
+	padding-right: 12px;
+	padding-left: 12px;
+	flex: none;
 }
 
 /* Dropdown Menu */
