@@ -9,6 +9,8 @@ If you use multiple Google accounts (personal, work, school), you know the frust
 ## Features
 
 - **Domain-Specific Account Selection**: Set different preferred accounts for different Google domains (e.g., YouTube, Gmail, Drive)
+- **Day-Based Rules**: Choose which days each domain rule should apply
+- **Optional Active Hours**: Add a start and end time so a rule only runs during a specific window on the selected days
 - **Auto-Redirect**: Automatically redirects to add the `authuser` parameter when you visit a configured Google domain
 - **Smart Loop Prevention**: Intelligently prevents redirect loops
 - **Google Domain Autocomplete**: Includes autocomplete suggestions for popular Google domains
@@ -35,8 +37,20 @@ If you use multiple Google accounts (personal, work, school), you know the frust
    - Click "Add Domain" to create a new entry
    - Enter a Google domain (or select from autocomplete suggestions)
    - Enter the Gmail address you prefer to use for that domain
+   - Choose the days when the rule should be active
+   - Optionally enable `Active hours` and set a start and end time
 4. Click "Save Changes" to apply your settings
 5. Visit any Google service - the extension will automatically redirect you to use your preferred account
+
+## Rule Behavior
+
+- A domain rule runs only when the rule is enabled and the current day matches one of the selected days.
+- If `Active hours` is turned off, the rule stays active for the full selected day.
+- If `Active hours` is turned on, the rule only runs when the current local browser time is between the configured start and end time.
+- Start and end times are inclusive.
+- End time must be later than start time. Overnight windows are not supported.
+- If all day buttons are deselected, the extension normalizes the rule back to all seven days when you save it.
+- Turning `Active hours` off clears the saved start and end times for that rule.
 
 ## Domain Configuration Examples
 
@@ -45,6 +59,8 @@ If you use multiple Google accounts (personal, work, school), you know the frust
 | youtube.com | work@gmail.com | YouTube always uses your work account |
 | mail.google.com | personal@gmail.com | Gmail always opens with your personal account |
 | drive.google.com | school@gmail.com | Google Drive defaults to your school account |
+
+You can further narrow any of those rules with selected days and optional active hours. For example, `drive.google.com` can use your work account only on weekdays from `09:00` to `18:00`, while `youtube.com` can stay active all day every day.
 
 ## Supported Google Domains
 
@@ -66,9 +82,10 @@ The extension supports numerous Google domains, including:
 The extension:
 1. Checks if the current website is a Google domain
 2. Determines if you've configured a preferred account for that domain
-3. Adds the appropriate `authuser` parameter to the URL
-4. Implements safeguards to prevent redirect loops
-5. Provides an intuitive UI for managing your preferences
+3. Checks whether the rule is active for the current day and, if configured, the current local time
+4. Adds the appropriate `authuser` parameter to the URL
+5. Implements safeguards to prevent redirect loops
+6. Provides an intuitive UI for managing your preferences
 
 ## Technical Details
 

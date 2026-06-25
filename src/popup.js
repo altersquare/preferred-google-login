@@ -35,6 +35,79 @@ const googleDomains = {
 	ai: "ai.google",
 };
 
+const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
+
+function normalizeDays(days) {
+	if (!Array.isArray(days) || days.length === 0) {
+		return [...ALL_DAYS];
+	}
+
+	const normalizedDays = [...new Set(days)]
+		.map((day) => Number(day))
+		.filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)
+		.sort((a, b) => a - b);
+
+	return normalizedDays.length ? normalizedDays : [...ALL_DAYS];
+}
+
+function normalizeDomainSetting(value) {
+	if (typeof value === "string") {
+		return {
+			email: value,
+			enabled: true,
+			days: [...ALL_DAYS],
+			timeEnabled: false,
+			startTime: "",
+			endTime: "",
+		};
+	}
+
+	return {
+		email: value?.email || "",
+		enabled: value?.enabled !== false,
+		days: normalizeDays(value?.days),
+		timeEnabled: Boolean(value?.timeEnabled),
+		startTime: value?.startTime || "",
+		endTime: value?.endTime || "",
+	};
+}
+
+function parseTimeToMinutes(timeValue) {
+	if (!/^\d{2}:\d{2}$/.test(timeValue)) {
+		return null;
+	}
+
+	const [hours, minutes] = timeValue.split(":").map(Number);
+	if (
+		!Number.isInteger(hours) ||
+		!Number.isInteger(minutes) ||
+		hours < 0 ||
+		hours > 23 ||
+		minutes < 0 ||
+		minutes > 59
+	) {
+		return null;
+	}
+
+	return hours * 60 + minutes;
+}
+
+function isValidTimeRange(startTime, endTime) {
+	const startMinutes = parseTimeToMinutes(startTime);
+	const endMinutes = parseTimeToMinutes(endTime);
+
+	if (startMinutes === null || endMinutes === null) {
+		return false;
+	}
+
+	return endMinutes > startMinutes;
+}
+
+function setErrorMessage(element, message = "") {
+	element.textContent = message;
+	element.style.display = message ? "block" : "none";
+}
+
 document.addEventListener("DOMContentLoaded", handleDOMLoad);
 
 async function handleDOMLoad() {
@@ -73,14 +146,14 @@ async function handleDOMLoad() {
 			"youtube.com": {
 				email: "user@gmail.com",
 				enabled: true,
-				days: [0, 1, 2, 3, 4, 5, 6],
+				days: [...ALL_DAYS],
 			},
 		};
 		await setStorage("domainEmails", domainEmails);
 	}
 
 	// Populate the domain-email list
-	populateDomainEmailList(domainEmailList, domainEmails, saveButton);
+	populateDomainEmailList(domainEmailList, domainEmails);
 }
 
 function getKeyFromDomain(domain) {
@@ -91,25 +164,22 @@ function getKeyFromDomain(domain) {
 	);
 }
 
-function populateDomainEmailList(container, domainEmails, saveButton) {
+function populateDomainEmailList(container, domainEmails) {
 	container.innerHTML = "";
 
 	for (const [domain, value] of Object.entries(domainEmails)) {
-		// Handle legacy format (string) vs new format (object)
-		const email = typeof value === "string" ? value : value.email;
-		const enabled = typeof value === "string" ? true : value.enabled;
-		// Default to all days (0-6) if not specified
-		const days =
-			typeof value === "string" || !value.days
-				? [0, 1, 2, 3, 4, 5, 6]
-				: value.days;
+		const { email, enabled, days, timeEnabled, startTime, endTime } =
+			normalizeDomainSetting(value);
 
 		addDomainEmailPair(
 			container,
 			getKeyFromDomain(domain),
 			email,
 			enabled,
-			days
+			days,
+			timeEnabled,
+			startTime,
+			endTime
 		);
 	}
 }
@@ -119,7 +189,10 @@ function addDomainEmailPair(
 	domain = "",
 	email = "",
 	enabled = true,
-	days = [0, 1, 2, 3, 4, 5, 6]
+	days = [...ALL_DAYS],
+	timeEnabled = false,
+	startTime = "",
+	endTime = ""
 ) {
 	const domainEmailContainer = document.createElement("div");
 	domainEmailContainer.className = "domain-email-container";
@@ -167,7 +240,7 @@ function addDomainEmailPair(
 	listContainer.appendChild(dropdownList);
 
 	const domainErrorMessage = document.createElement("div");
-	domainErrorMessage.className = "error-message";
+	domainErrorMessage.className = "error-message domain-error-message";
 	domainErrorMessage.textContent = "";
 	listContainer.appendChild(domainErrorMessage);
 
@@ -184,7 +257,7 @@ function addDomainEmailPair(
 	emailContainer.appendChild(emailInput);
 
 	const emailErrorMessage = document.createElement("div");
-	emailErrorMessage.className = "error-message";
+	emailErrorMessage.className = "error-message email-error-message";
 	emailErrorMessage.textContent = "";
 	emailContainer.appendChild(emailErrorMessage);
 
@@ -206,7 +279,7 @@ function addDomainEmailPair(
 				"youtube.com": {
 					email: "user@gmail.com",
 					enabled: true,
-					days: [0, 1, 2, 3, 4, 5, 6],
+					days: [...ALL_DAYS],
 				},
 			};
 			await setStorage("domainEmails", domainEmails);
@@ -252,6 +325,51 @@ function addDomainEmailPair(
 
 	contentWrapper.appendChild(daysRow);
 
+	const timeRow = document.createElement("div");
+	timeRow.className = "time-row";
+
+	const timeToggleLabel = document.createElement("label");
+	timeToggleLabel.className = "time-toggle-label";
+
+	const timeToggle = document.createElement("input");
+	timeToggle.type = "checkbox";
+	timeToggle.className = "time-toggle";
+	timeToggle.checked = timeEnabled;
+
+	const timeToggleText = document.createElement("span");
+	timeToggleText.textContent = "Active hours";
+
+	timeToggleLabel.appendChild(timeToggle);
+	timeToggleLabel.appendChild(timeToggleText);
+	timeRow.appendChild(timeToggleLabel);
+
+	const timeFields = document.createElement("div");
+	timeFields.className = "time-fields";
+
+	const startTimeInput = document.createElement("input");
+	startTimeInput.type = "time";
+	startTimeInput.className = "time-input start-time-input";
+	startTimeInput.value = startTime;
+
+	const timeSeparator = document.createElement("span");
+	timeSeparator.className = "time-separator";
+	timeSeparator.textContent = "to";
+
+	const endTimeInput = document.createElement("input");
+	endTimeInput.type = "time";
+	endTimeInput.className = "time-input end-time-input";
+	endTimeInput.value = endTime;
+
+	timeFields.appendChild(startTimeInput);
+	timeFields.appendChild(timeSeparator);
+	timeFields.appendChild(endTimeInput);
+	timeRow.appendChild(timeFields);
+	contentWrapper.appendChild(timeRow);
+
+	const timeErrorMessage = document.createElement("div");
+	timeErrorMessage.className = "error-message time-error-message";
+	timeRow.appendChild(timeErrorMessage);
+
 	domainEmailContainer.appendChild(contentWrapper);
 
 	// Add the row to the container
@@ -278,6 +396,65 @@ function addDomainEmailPair(
 	// Call checkInputs initially to disable button if inputs are empty
 	checkInputs();
 
+	function validateTimeInputs() {
+		if (!timeToggle.checked) {
+			setErrorMessage(timeErrorMessage);
+			return true;
+		}
+
+		const hasStartTime = Boolean(startTimeInput.value);
+		const hasEndTime = Boolean(endTimeInput.value);
+
+		if (!hasStartTime && !hasEndTime) {
+			setErrorMessage(timeErrorMessage);
+			return true;
+		}
+
+		if (!hasStartTime || !hasEndTime) {
+			setErrorMessage(timeErrorMessage, "Start and end time are required");
+			return false;
+		}
+
+		if (!isValidTimeRange(startTimeInput.value, endTimeInput.value)) {
+			setErrorMessage(
+				timeErrorMessage,
+				"End time must be later than start time"
+			);
+			return false;
+		}
+
+		setErrorMessage(timeErrorMessage);
+		return true;
+	}
+
+	function syncTimeFieldState({ clearValues = false } = {}) {
+		const isTimeRestricted = timeToggle.checked;
+		timeFields.classList.toggle("hidden", !isTimeRestricted);
+		startTimeInput.disabled = !isTimeRestricted;
+		endTimeInput.disabled = !isTimeRestricted;
+
+		if (!isTimeRestricted && clearValues) {
+			startTimeInput.value = "";
+			endTimeInput.value = "";
+		}
+
+		validateTimeInputs();
+	}
+
+	timeToggle.addEventListener("change", () => {
+		enableSaveButton();
+		syncTimeFieldState({ clearValues: !timeToggle.checked });
+	});
+
+	[startTimeInput, endTimeInput].forEach((input) => {
+		input.addEventListener("input", () => {
+			enableSaveButton();
+			validateTimeInputs();
+		});
+	});
+
+	syncTimeFieldState();
+
 	// Validation for email input
 	emailInput.addEventListener("input", () => {
 		enableSaveButton();
@@ -285,13 +462,11 @@ function addDomainEmailPair(
 		const emailValue = emailInput.value.trim();
 
 		if (emailValue === "") {
-			emailErrorMessage.textContent = "Email is required";
-			emailErrorMessage.style.display = "block";
+			setErrorMessage(emailErrorMessage, "Email is required");
 		} else if (!validateEmail(emailValue)) {
-			emailErrorMessage.textContent = "Invalid email format";
-			emailErrorMessage.style.display = "block";
+			setErrorMessage(emailErrorMessage, "Invalid email format");
 		} else {
-			emailErrorMessage.style.display = "none";
+			setErrorMessage(emailErrorMessage);
 		}
 	});
 
@@ -364,18 +539,14 @@ function addDomainEmailPair(
 		const isDuplicate =
 			domains.filter((d) => d === inputValue.toLowerCase()).length > 1;
 
-		domainErrorMessage.textContent = "";
-		domainErrorMessage.style.display = "none";
+		setErrorMessage(domainErrorMessage);
 
 		if (!inputValue) {
-			domainErrorMessage.textContent = "Domain is required";
-			domainErrorMessage.style.display = "block";
+			setErrorMessage(domainErrorMessage, "Domain is required");
 		} else if (!(inputValue in googleDomains)) {
-			domainErrorMessage.textContent = "Invalid service";
-			domainErrorMessage.style.display = "block";
+			setErrorMessage(domainErrorMessage, "Invalid service");
 		} else if (isDuplicate) {
-			domainErrorMessage.textContent = "Already added";
-			domainErrorMessage.style.display = "block";
+			setErrorMessage(domainErrorMessage, "Already added");
 		}
 		enableSaveButton();
 	}
@@ -404,26 +575,46 @@ async function handleSaveClick() {
 		const toggleInput = container.querySelector(
 			".switch input[type='checkbox']"
 		);
+		const domainErrorMessage = container.querySelector(
+			".domain-error-message"
+		);
+		const emailErrorMessage = container.querySelector(
+			".email-error-message"
+		);
+		const timeErrorMessage = container.querySelector(
+			".time-error-message"
+		);
+		const timeToggleInput = container.querySelector(".time-toggle");
+		const startTimeInput = container.querySelector(".start-time-input");
+		const endTimeInput = container.querySelector(".end-time-input");
 
 		const domain = domainInput.value.trim();
 		const email = emailInput.value.trim();
 		const enabled = toggleInput ? toggleInput.checked : true;
+		const timeEnabled = timeToggleInput ? timeToggleInput.checked : false;
+		const startTime = startTimeInput ? startTimeInput.value : "";
+		const endTime = endTimeInput ? endTimeInput.value : "";
+
+		setErrorMessage(domainErrorMessage);
+		setErrorMessage(emailErrorMessage);
+		setErrorMessage(timeErrorMessage);
 
 		// Check if domain exists in googleDomains
 		if (!(domain in googleDomains)) {
 			isValid = false;
-			container.querySelector(
-				".error-message:first-of-type"
-			).textContent = "Invalid domain";
-			container.querySelector(
-				".error-message:first-of-type"
-			).style.display = "block";
+			setErrorMessage(domainErrorMessage, "Invalid domain");
 			return;
 		}
 
 		// Prevent saving if both domain and email are empty
 		if (!domain || !email) {
 			isValid = false;
+			if (!domain) {
+				setErrorMessage(domainErrorMessage, "Domain is required");
+			}
+			if (!email) {
+				setErrorMessage(emailErrorMessage, "Email is required");
+			}
 			return;
 		}
 
@@ -433,12 +624,7 @@ async function handleSaveClick() {
 		// Check if domain is already processed
 		if (seenDomains.has(mappedDomain)) {
 			isValid = false;
-			container.querySelector(
-				".error-message:first-of-type"
-			).textContent = "Domain Already exist";
-			container.querySelector(
-				".error-message:first-of-type"
-			).style.display = "block";
+			setErrorMessage(domainErrorMessage, "Domain already exists");
 			return;
 		}
 
@@ -448,20 +634,45 @@ async function handleSaveClick() {
 		// Check if email is valid
 		if (!validateEmail(email)) {
 			isValid = false;
-			container.querySelector(
-				".error-message:last-of-type"
-			).style.display = "block";
+			setErrorMessage(emailErrorMessage, "Invalid email format");
 			return;
 		}
 
 		// Get selected days
 		const dayBtns = container.querySelectorAll(".day-btn.selected");
-		const days = Array.from(dayBtns)
+		const days = normalizeDays(
+			Array.from(dayBtns)
 			.map((btn) => parseInt(btn.dataset.day))
-			.sort((a, b) => a - b);
+			.sort((a, b) => a - b)
+		);
+
+		if (timeEnabled) {
+			if (!startTime || !endTime) {
+				isValid = false;
+				setErrorMessage(
+					timeErrorMessage,
+					"Start and end time are required"
+				);
+				return;
+			}
+
+			if (!isValidTimeRange(startTime, endTime)) {
+				isValid = false;
+				setErrorMessage(
+					timeErrorMessage,
+					"End time must be later than start time"
+				);
+				return;
+			}
+		}
 
 		// Save the domain-email pair
-		domainEmails[mappedDomain] = { email, enabled, days };
+		domainEmails[mappedDomain] = {
+			email,
+			enabled,
+			days,
+			...(timeEnabled ? { timeEnabled: true, startTime, endTime } : {}),
+		};
 	});
 
 	if (!isValid) {

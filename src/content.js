@@ -1,3 +1,71 @@
+const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
+
+function normalizeDays(days) {
+	if (!Array.isArray(days) || days.length === 0) {
+		return [...ALL_DAYS];
+	}
+
+	const normalizedDays = [...new Set(days)]
+		.map((day) => Number(day))
+		.filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)
+		.sort((a, b) => a - b);
+
+	return normalizedDays.length ? normalizedDays : [...ALL_DAYS];
+}
+
+function normalizeDomainSetting(value) {
+	if (typeof value === "string") {
+		return {
+			email: value,
+			enabled: true,
+			days: [...ALL_DAYS],
+			timeEnabled: false,
+			startTime: "",
+			endTime: "",
+		};
+	}
+
+	return {
+		email: value?.email || "",
+		enabled: value?.enabled !== false,
+		days: normalizeDays(value?.days),
+		timeEnabled: Boolean(value?.timeEnabled),
+		startTime: value?.startTime || "",
+		endTime: value?.endTime || "",
+	};
+}
+
+function parseTimeToMinutes(timeValue) {
+	if (!/^\d{2}:\d{2}$/.test(timeValue)) {
+		return null;
+	}
+
+	const [hours, minutes] = timeValue.split(":").map(Number);
+	if (
+		!Number.isInteger(hours) ||
+		!Number.isInteger(minutes) ||
+		hours < 0 ||
+		hours > 23 ||
+		minutes < 0 ||
+		minutes > 59
+	) {
+		return null;
+	}
+
+	return hours * 60 + minutes;
+}
+
+function isWithinActiveHours(startTime, endTime, currentMinutes) {
+	const startMinutes = parseTimeToMinutes(startTime);
+	const endMinutes = parseTimeToMinutes(endTime);
+
+	if (startMinutes === null || endMinutes === null) {
+		return false;
+	}
+
+	return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+}
+
 // Immediately invoked function expression (IIFE) to execute code on page load.
 (async () => {
 	try {
@@ -33,17 +101,8 @@
 		}
 
 		const domainSetting = domainEmails[matchedDomain];
-		let email, enabled, days;
-
-		if (typeof domainSetting === "string") {
-			email = domainSetting;
-			enabled = true;
-			days = [0, 1, 2, 3, 4, 5, 6];
-		} else {
-			email = domainSetting.email;
-			enabled = domainSetting.enabled;
-			days = domainSetting.days || [0, 1, 2, 3, 4, 5, 6];
-		}
+		const { email, enabled, days, timeEnabled, startTime, endTime } =
+			normalizeDomainSetting(domainSetting);
 
 		if (!enabled) {
 			console.log("Extension is disabled for this domain.");
@@ -55,6 +114,16 @@
 		if (!days.includes(currentDay)) {
 			console.log("Rule is not active for today.");
 			return;
+		}
+
+		if (timeEnabled) {
+			const now = new Date();
+			const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+			if (!isWithinActiveHours(startTime, endTime, currentMinutes)) {
+				console.log("Rule is not active at this time.");
+				return;
+			}
 		}
 
 		// Add the authuser parameter to the URL.
