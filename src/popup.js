@@ -466,7 +466,10 @@ function addDomainEmailPair(
 		}
 
 		if (!hasStartTime || !hasEndTime) {
-			setErrorMessage(timeErrorMessage, "Start and end time are required");
+			setErrorMessage(
+				timeErrorMessage,
+				"Start and end time are required"
+			);
 			return false;
 		}
 
@@ -642,12 +645,8 @@ async function handleSaveClick() {
 		const emailErrorMessage = container.querySelector(
 			".email-error-message"
 		);
-		const timeErrorMessage = container.querySelector(
-			".time-error-message"
-		);
-		const daysErrorMessage = container.querySelector(
-			".days-error-message"
-		);
+		const timeErrorMessage = container.querySelector(".time-error-message");
+		const daysErrorMessage = container.querySelector(".days-error-message");
 		const timeToggleInput = container.querySelector(".time-toggle");
 		const startTimeInput = container.querySelector(".start-time-input");
 		const endTimeInput = container.querySelector(".end-time-input");

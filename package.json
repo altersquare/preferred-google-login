@@ -1,14 +1,15 @@
 {
   "name": "preferred-google-login",
-  "version": "1.0.0",
+  "version": "7.3.0",
   "description": "This Chrome extension simplifies switching between multiple Google accounts by automatically adding the `authuser` parameter to relevant Google domains.",
   "main": "content.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint .",
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "eslint": "^9.21.0",

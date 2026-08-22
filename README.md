@@ -120,15 +120,18 @@ Contributions are welcome! To contribute:
 
 ```
 ├── .vscode            # VS Code configuration
-├── icons              # Extension icons in various sizes
+├── icons              # Extension icons (PNG sizes + SVG master source)
+├── scripts            # Build scripts for the Web Store upload zip
 ├── src                # Source code
 │   ├── content.js     # Content script for adding authuser parameter
+│   ├── popup.css      # Extension popup styles
 │   ├── popup.html     # Extension popup interface
 │   └── popup.js       # Popup functionality
+├── .gitattributes     # Git attributes (keeps LF endings on shell scripts)
 ├── .gitignore         # Git ignore file
 ├── .prettierrc.js     # Prettier configuration
+├── CHANGELOG.md       # Release history
 ├── eslint.config.mjs  # ESLint configuration
-├── LICENSE            # MIT License
 ├── manifest.json      # Chrome extension manifest
 ├── package.json       # NPM package configuration
 └── README.md          # This file
