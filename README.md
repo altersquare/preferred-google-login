@@ -147,6 +147,24 @@ npm run lint
 npm run format
 ```
 
+### Building the Web Store zip
+
+Both scripts read the version from `manifest.json` and create
+`preferred-google-login-v<version>.zip` in the repository root, containing
+only `manifest.json`, `icons/`, and `src/`.
+
+On Windows (PowerShell):
+
+```powershell
+.\scripts\build-zip.ps1
+```
+
+On macOS/Linux (requires `zip`):
+
+```bash
+./scripts/build-zip.sh
+```
+
 ## License
 
 ```
