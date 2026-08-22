@@ -4,7 +4,7 @@ Notable changes to Preferred Google Login. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and versions follow the
 `version` field in `manifest.json`.
 
-## [Unreleased]
+## [7.3.0] — 2026-08-22
 
 ### Added
 
