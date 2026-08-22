@@ -19,5 +19,5 @@ fi
 
 out="preferred-google-login-v${version}.zip"
 rm -f "$out"
-zip -r "$out" manifest.json icons src -x "*.DS_Store"
+zip -r "$out" manifest.json icons src -x "*.DS_Store" -x "*.svg"
 echo "Created $out"

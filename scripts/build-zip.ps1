@@ -22,7 +22,8 @@ if (Test-Path $out) {
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
-$files = @(Get-Item manifest.json) + (Get-ChildItem -Path icons, src -File)
+$files = @(Get-Item manifest.json) +
+	(Get-ChildItem -Path icons, src -File | Where-Object { $_.Extension -ne ".svg" })
 
 $archive = [System.IO.Compression.ZipFile]::Open(
 	(Join-Path $root $out),
