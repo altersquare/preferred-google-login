@@ -16,6 +16,9 @@ Notable changes to Preferred Google Login. The format is based on
 
 ### Changed
 
+- New extension icon: a blue rounded square with an avatar and a green
+  checkmark badge, replacing the ring design. The SVG source lives at
+  `icons/icon.svg`. ([#13])
 - Duplicate detection compares resolved domains, so a service name (`gmail`)
   and its hostname (`mail.google.com`) are recognized as the same rule. ([#13])
 - Rules stored under a domain with no autocomplete entry now display as their
