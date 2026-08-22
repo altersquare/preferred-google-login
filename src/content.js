@@ -90,9 +90,16 @@ function isWithinActiveHours(startTime, endTime, currentMinutes) {
 		}
 
 		// Check if the current URL's hostname is in the allowed domains list.
-		const matchedDomain = Object.keys(domainEmails).find((domain) =>
-			window.location.hostname.includes(domain)
-		);
+		// Only exact hostnames or subdomains count as a match, and the most
+		// specific (longest) configured domain wins so that a rule for e.g.
+		// mail.google.com takes precedence over one for google.com.
+		const hostname = window.location.hostname;
+		const matchedDomain = Object.keys(domainEmails)
+			.filter(
+				(domain) =>
+					hostname === domain || hostname.endsWith(`.${domain}`)
+			)
+			.sort((a, b) => b.length - a.length)[0];
 
 		// If the domain is not allowed or no email is set for it, exit.
 		if (!matchedDomain) {

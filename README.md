@@ -49,7 +49,7 @@ If you use multiple Google accounts (personal, work, school), you know the frust
 - If `Active hours` is turned on, the rule only runs when the current local browser time is between the configured start and end time.
 - Start and end times are inclusive.
 - End time must be later than start time. Overnight windows are not supported.
-- If all day buttons are deselected, the extension normalizes the rule back to all seven days when you save it.
+- At least one day must be selected. If all day buttons are deselected, the popup shows an error and the rule cannot be saved.
 - Turning `Active hours` off clears the saved start and end times for that rule.
 
 ## Domain Configuration Examples
