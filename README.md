@@ -13,6 +13,7 @@ If you use multiple Google accounts (personal, work, school), you know the frust
 - **Optional Active Hours**: Add a start and end time so a rule only runs during a specific window on the selected days
 - **Auto-Redirect**: Automatically redirects to add the `authuser` parameter when you visit a configured Google domain
 - **Smart Loop Prevention**: Intelligently prevents redirect loops
+- **Any Google Domain**: Enter any domain under `google.com`, `youtube.com`, or `ai.google` — new Google services work without an extension update
 - **Google Domain Autocomplete**: Includes autocomplete suggestions for popular Google domains
 - **User-Friendly Interface**: Clean, modern UI with toggle to quickly enable/disable the extension
 - **Multiple Account Support**: Easily manage multiple Google accounts across different services
@@ -35,7 +36,7 @@ If you use multiple Google accounts (personal, work, school), you know the frust
 2. Toggle the extension on/off using the switch in the header
 3. Add domain and email pairs:
    - Click "Add Domain" to create a new entry
-   - Enter a Google domain (or select from autocomplete suggestions)
+   - Enter a Google domain — pick a service from the autocomplete suggestions, or type any hostname (or paste a URL) under `google.com`, `youtube.com`, or `ai.google`
    - Enter the Gmail address you prefer to use for that domain
    - Choose the days when the rule should be active
    - Optionally enable `Active hours` and set a start and end time
@@ -64,18 +65,17 @@ You can further narrow any of those rules with selected days and optional active
 
 ## Supported Google Domains
 
-The extension supports numerous Google domains, including:
-- google.com
-- youtube.com
-- mail.google.com
-- drive.google.com
-- docs.google.com
-- cloud.google.com
-- meet.google.com
-- photos.google.com
-- gemini.google.com
-- classroom.google.com
-- and many more!
+The extension works on any domain under these roots (which match the
+extension's host permissions):
+
+- `google.com` and all of its subdomains (mail.google.com, drive.google.com, docs.google.com, meet.google.com, gemini.google.com, ...)
+- `youtube.com` and all of its subdomains (studio.youtube.com, ...)
+- `ai.google` and all of its subdomains
+
+The popup's dropdown suggests popular services, but you can type any
+hostname under those roots — including Google services that launch in the
+future. You can also paste a full URL and the extension will extract the
+hostname.
 
 ## How It Works
 
