@@ -718,6 +718,17 @@ async function handleSaveClick() {
 		return;
 	}
 
+	// Confirm the save to the user. Shown regardless of whether the tab
+	// reload below succeeds, since the settings are already persisted. The
+	// button stays disabled until the next edit re-enables it.
+	const saveButton = document.getElementById("saveButton");
+	saveButton.textContent = "Saved ✓";
+	saveButton.classList.add("disabled");
+	saveButton.disabled = true;
+	setTimeout(() => {
+		saveButton.textContent = "Save Changes";
+	}, 2000);
+
 	// Settings are saved at this point; reloading the active tab is only a
 	// convenience and can fail (e.g. the tab is not a Google page, so the
 	// extension has no host permission for it).
