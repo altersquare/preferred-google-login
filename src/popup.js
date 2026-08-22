@@ -35,6 +35,44 @@ const googleDomains = {
 	ai: "ai.google",
 };
 
+// Domain roots the extension can run on, mirroring the host_permissions
+// and content-script match patterns in manifest.json.
+const GOOGLE_DOMAIN_ROOTS = ["google.com", "youtube.com", "ai.google"];
+
+function normalizeDomainInput(input) {
+	const raw = String(input || "")
+		.trim()
+		.toLowerCase();
+	if (!raw) return "";
+
+	try {
+		const withScheme = raw.includes("://") ? raw : `https://${raw}`;
+		return new URL(withScheme).hostname;
+	} catch {
+		return "";
+	}
+}
+
+function isValidGoogleHostname(hostname) {
+	if (!hostname) return false;
+	return GOOGLE_DOMAIN_ROOTS.some(
+		(root) => hostname === root || hostname.endsWith(`.${root}`)
+	);
+}
+
+// Resolve whatever the user typed — a friendly key from the dropdown
+// ("gmail"), a hostname ("docs.google.com"), or a pasted URL — to the
+// hostname used as the storage key. Returns null for anything the
+// extension cannot run on.
+function resolveDomainInput(input) {
+	const raw = String(input || "")
+		.trim()
+		.toLowerCase();
+	if (googleDomains[raw]) return googleDomains[raw];
+	const hostname = normalizeDomainInput(raw);
+	return isValidGoogleHostname(hostname) ? hostname : null;
+}
+
 const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
 
 function normalizeDays(days) {
@@ -173,7 +211,7 @@ function populateDomainEmailList(container, domainEmails) {
 
 		addDomainEmailPair(
 			container,
-			getKeyFromDomain(domain),
+			getKeyFromDomain(domain) || domain,
 			email,
 			enabled,
 			days,
@@ -228,7 +266,7 @@ function addDomainEmailPair(
 	const domainInput = document.createElement("input");
 	domainInput.className = "domain-input";
 	domainInput.type = "text";
-	domainInput.placeholder = "Select service...";
+	domainInput.placeholder = "Service or Google domain...";
 	domainInput.value = domain;
 	// Remove native autocomplete
 	domainInput.setAttribute("autocomplete", "off");
@@ -269,9 +307,9 @@ function addDomainEmailPair(
 	removeButton.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
 	removeButton.title = "Remove";
 	removeButton.addEventListener("click", async () => {
-		// The input holds the friendly key (e.g. "gmail"); storage is keyed
-		// by the mapped domain (e.g. "mail.google.com").
-		const mappedDomain = googleDomains[domainInput.value.trim()];
+		// The input holds a friendly key (e.g. "gmail") or a hostname;
+		// storage is keyed by the resolved domain (e.g. "mail.google.com").
+		const mappedDomain = resolveDomainInput(domainInput.value);
 		let { domainEmails } = await getFromStorage("domainEmails");
 		if (domainEmails && mappedDomain && mappedDomain in domainEmails) {
 			delete domainEmails[mappedDomain];
@@ -395,9 +433,9 @@ function addDomainEmailPair(
 	// Function to check input fields and enable/disable the add button
 	function checkInputs() {
 		const addButton = document.getElementById("addButton");
-		const domainValue = domainInput.value.trim().split(" ")[0];
+		const domainValue = domainInput.value.trim();
 
-		const isValidDomain = Object.keys(googleDomains).includes(domainValue);
+		const isValidDomain = resolveDomainInput(domainValue) !== null;
 		const isValidEmail = validateEmail(emailInput.value.trim());
 
 		if (domainValue && isValidDomain && isValidEmail) {
@@ -548,20 +586,26 @@ function addDomainEmailPair(
 
 	function validateDomain() {
 		const inputValue = domainInput.value.trim();
+		const resolved = resolveDomainInput(inputValue);
 
-		const domains = Array.from(
+		// Compare resolved domains so "gmail" and "mail.google.com" count
+		// as the same rule.
+		const resolvedDomains = Array.from(
 			container.querySelectorAll(".domain-input")
-		).map((input) => input.value.trim().toLowerCase());
+		)
+			.map((input) => resolveDomainInput(input.value))
+			.filter(Boolean);
 
 		const isDuplicate =
-			domains.filter((d) => d === inputValue.toLowerCase()).length > 1;
+			resolved &&
+			resolvedDomains.filter((d) => d === resolved).length > 1;
 
 		setErrorMessage(domainErrorMessage);
 
 		if (!inputValue) {
 			setErrorMessage(domainErrorMessage, "Domain is required");
-		} else if (!(inputValue in googleDomains)) {
-			setErrorMessage(domainErrorMessage, "Invalid service");
+		} else if (!resolved) {
+			setErrorMessage(domainErrorMessage, "Invalid Google domain");
 		} else if (isDuplicate) {
 			setErrorMessage(domainErrorMessage, "Already added");
 		}
@@ -620,13 +664,6 @@ async function handleSaveClick() {
 		setErrorMessage(timeErrorMessage);
 		setErrorMessage(daysErrorMessage);
 
-		// Check if domain exists in googleDomains
-		if (!(domain in googleDomains)) {
-			isValid = false;
-			setErrorMessage(domainErrorMessage, "Invalid domain");
-			return;
-		}
-
 		// Prevent saving if both domain and email are empty
 		if (!domain || !email) {
 			isValid = false;
@@ -639,8 +676,14 @@ async function handleSaveClick() {
 			return;
 		}
 
-		// Get mapped domain key
-		const mappedDomain = googleDomains[domain];
+		// Resolve a friendly key, hostname, or pasted URL to the domain
+		// used as the storage key.
+		const mappedDomain = resolveDomainInput(domain);
+		if (!mappedDomain) {
+			isValid = false;
+			setErrorMessage(domainErrorMessage, "Invalid Google domain");
+			return;
+		}
 
 		// Check if domain is already processed
 		if (seenDomains.has(mappedDomain)) {
