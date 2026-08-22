@@ -269,10 +269,13 @@ function addDomainEmailPair(
 	removeButton.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
 	removeButton.title = "Remove";
 	removeButton.addEventListener("click", async () => {
-		const domain = domainInput.value.trim();
+		// The input holds the friendly key (e.g. "gmail"); storage is keyed
+		// by the mapped domain (e.g. "mail.google.com").
+		const mappedDomain = googleDomains[domainInput.value.trim()];
 		let { domainEmails } = await getFromStorage("domainEmails");
-		if (domainEmails) {
-			delete domainEmails[domain];
+		if (domainEmails && mappedDomain && mappedDomain in domainEmails) {
+			delete domainEmails[mappedDomain];
+			await setStorage("domainEmails", domainEmails);
 		}
 		if (!domainEmails || !Object.keys(domainEmails).length) {
 			domainEmails = {
@@ -306,6 +309,18 @@ function addDomainEmailPair(
 		"Saturday",
 	];
 
+	const daysErrorMessage = document.createElement("div");
+	daysErrorMessage.className = "error-message days-error-message";
+
+	function validateDays() {
+		const hasSelectedDay = daysRow.querySelector(".day-btn.selected");
+		setErrorMessage(
+			daysErrorMessage,
+			hasSelectedDay ? "" : "Select at least one day"
+		);
+		return Boolean(hasSelectedDay);
+	}
+
 	dayLabels.forEach((label, index) => {
 		const btn = document.createElement("button");
 		btn.className = "day-btn";
@@ -318,12 +333,14 @@ function addDomainEmailPair(
 		}
 		btn.addEventListener("click", () => {
 			btn.classList.toggle("selected");
+			validateDays();
 			enableSaveButton();
 		});
 		daysRow.appendChild(btn);
 	});
 
 	contentWrapper.appendChild(daysRow);
+	contentWrapper.appendChild(daysErrorMessage);
 
 	const timeRow = document.createElement("div");
 	timeRow.className = "time-row";
@@ -584,6 +601,9 @@ async function handleSaveClick() {
 		const timeErrorMessage = container.querySelector(
 			".time-error-message"
 		);
+		const daysErrorMessage = container.querySelector(
+			".days-error-message"
+		);
 		const timeToggleInput = container.querySelector(".time-toggle");
 		const startTimeInput = container.querySelector(".start-time-input");
 		const endTimeInput = container.querySelector(".end-time-input");
@@ -598,6 +618,7 @@ async function handleSaveClick() {
 		setErrorMessage(domainErrorMessage);
 		setErrorMessage(emailErrorMessage);
 		setErrorMessage(timeErrorMessage);
+		setErrorMessage(daysErrorMessage);
 
 		// Check if domain exists in googleDomains
 		if (!(domain in googleDomains)) {
@@ -640,11 +661,14 @@ async function handleSaveClick() {
 
 		// Get selected days
 		const dayBtns = container.querySelectorAll(".day-btn.selected");
-		const days = normalizeDays(
-			Array.from(dayBtns)
+		if (!dayBtns.length) {
+			isValid = false;
+			setErrorMessage(daysErrorMessage, "Select at least one day");
+			return;
+		}
+		const days = Array.from(dayBtns)
 			.map((btn) => parseInt(btn.dataset.day))
-			.sort((a, b) => a - b)
-		);
+			.sort((a, b) => a - b);
 
 		if (timeEnabled) {
 			if (!startTime || !endTime) {
@@ -681,26 +705,8 @@ async function handleSaveClick() {
 
 	try {
 		await setStorage("domainEmails", domainEmails);
-
-		let tabs = await chrome.tabs.query({
-			active: true,
-			currentWindow: true,
-		});
-		if (!tabs || tabs.length === 0) {
-			console.error("No active tab found");
-			return;
-		}
-		if (tabs[0].url.includes("chrome:")) return;
-
-		await chrome.scripting.executeScript({
-			target: { tabId: tabs[0].id },
-			function: () => {
-				window.location.reload();
-			},
-		});
 	} catch (error) {
 		console.error("Failed to save settings:", error);
-		// Optionally show an error to the user
 		const saveButton = document.getElementById("saveButton");
 		const originalText = saveButton.textContent;
 		saveButton.textContent = "Error Saving";
@@ -709,6 +715,31 @@ async function handleSaveClick() {
 			saveButton.textContent = originalText;
 			saveButton.classList.remove("disabled");
 		}, 2000);
+		return;
+	}
+
+	// Settings are saved at this point; reloading the active tab is only a
+	// convenience and can fail (e.g. the tab is not a Google page, so the
+	// extension has no host permission for it).
+	try {
+		const tabs = await chrome.tabs.query({
+			active: true,
+			currentWindow: true,
+		});
+		if (!tabs || tabs.length === 0) {
+			console.warn("No active tab found");
+			return;
+		}
+		if (tabs[0].url && tabs[0].url.includes("chrome:")) return;
+
+		await chrome.scripting.executeScript({
+			target: { tabId: tabs[0].id },
+			function: () => {
+				window.location.reload();
+			},
+		});
+	} catch (error) {
+		console.warn("Could not reload active tab:", error);
 	}
 }
 
