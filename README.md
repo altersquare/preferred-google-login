@@ -26,7 +26,7 @@ If you use multiple Google accounts (personal, work, school), you know the frust
 
 1. Download or clone this repository:
     ```bash
-    git clone https://github.com/altersquareio/preferred-google-login.git
+    git clone https://github.com/altersquare/preferred-google-login.git
     ```
 2. Open Chrome and navigate to `chrome://extensions/`
 3. Enable "Developer mode" in the top-right corner
@@ -112,7 +112,9 @@ The extension:
 
 ## Privacy
 
-This extension:
+Full policy: [PRIVACY.md](PRIVACY.md)
+
+In short, this extension:
 
 - Does NOT collect any user data
 - Does NOT send any information to external servers
@@ -215,4 +217,4 @@ SOFTWARE.
 ## Contact
 
 Rohan Dhamapurkar - dhamapurkar54@gmail.com  
-Project: [https://github.com/altersquareio/preferred-google-login](https://github.com/altersquareio/preferred-google-login)
+Project: [https://github.com/altersquare/preferred-google-login](https://github.com/altersquare/preferred-google-login)

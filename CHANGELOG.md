@@ -23,6 +23,8 @@ Notable changes to Preferred Account Login. The format is based on
 
 ### Changed
 
+- Added `PRIVACY.md`, a privacy policy covering what the extension stores and
+  what it never does, for the Chrome Web Store listing's privacy policy field.
 - The store short description in `manifest.json` no longer leads with the
   Google trademark, for the same branding reasons.
 - The popup heading now uses the extension's own icon instead of the Google
