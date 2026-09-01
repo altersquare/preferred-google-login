@@ -23,6 +23,8 @@ Notable changes to Preferred Account Login. The format is based on
 
 ### Changed
 
+- The store short description in `manifest.json` no longer leads with the
+  Google trademark, for the same branding reasons.
 - The popup heading now uses the extension's own icon instead of the Google
   logo, and the interface no longer requests the "Google Sans" typeface, to
   comply with Google's branding guidelines for Chrome Web Store listings.
