@@ -90,11 +90,11 @@ Notable changes to Preferred Account Login. The format is based on
   autocomplete, and stability fixes for storage and tab handling.
   ([#1]–[#6])
 
-[#13]: https://github.com/altersquare/preferred-google-login/pull/13
-[#11]: https://github.com/altersquare/preferred-google-login/pull/11
-[#10]: https://github.com/altersquare/preferred-google-login/pull/10
-[#9]: https://github.com/altersquare/preferred-google-login/pull/9
-[#8]: https://github.com/altersquare/preferred-google-login/pull/8
-[#7]: https://github.com/altersquare/preferred-google-login/pull/7
-[#6]: https://github.com/altersquare/preferred-google-login/pull/6
-[#1]: https://github.com/altersquare/preferred-google-login/pull/1
+[#13]: https://github.com/altersquare/preferred-account-login/pull/13
+[#11]: https://github.com/altersquare/preferred-account-login/pull/11
+[#10]: https://github.com/altersquare/preferred-account-login/pull/10
+[#9]: https://github.com/altersquare/preferred-account-login/pull/9
+[#8]: https://github.com/altersquare/preferred-account-login/pull/8
+[#7]: https://github.com/altersquare/preferred-account-login/pull/7
+[#6]: https://github.com/altersquare/preferred-account-login/pull/6
+[#1]: https://github.com/altersquare/preferred-account-login/pull/1

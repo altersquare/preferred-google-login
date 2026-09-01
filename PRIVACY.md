@@ -126,12 +126,12 @@ the project's `CHANGELOG.md`.
 Questions about this policy, or about the extension's handling of data, can be
 raised at:
 
-- Issues: https://github.com/altersquare/preferred-google-login/issues
-- Email: <!-- TODO: add a contact address before publishing this policy -->
+- Issues: https://github.com/altersquare/preferred-account-login/issues
+- Email: contact@altersquare.io
 
 ## Source code
 
 The extension is open source. Every claim in this policy can be checked against
-the code at https://github.com/altersquare/preferred-google-login — in
+the code at https://github.com/altersquare/preferred-account-login — in
 particular `src/content.js` (what runs on pages) and `src/popup.js` (what is
 stored).

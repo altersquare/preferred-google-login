@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds the Chrome Web Store upload zip:
-#   preferred-google-login-v<version>.zip  (version read from manifest.json)
+#   preferred-account-login-v<version>.zip  (version read from manifest.json)
 # Only manifest.json, icons/, and src/ are included.
 set -euo pipefail
 
@@ -17,7 +17,7 @@ if [ -z "$version" ]; then
 	exit 1
 fi
 
-out="preferred-google-login-v${version}.zip"
+out="preferred-account-login-v${version}.zip"
 rm -f "$out"
 zip -r "$out" manifest.json icons src -x "*.DS_Store" -x "*.svg"
 echo "Created $out"

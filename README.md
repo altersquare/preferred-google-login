@@ -26,7 +26,7 @@ If you use multiple Google accounts (personal, work, school), you know the frust
 
 1. Download or clone this repository:
     ```bash
-    git clone https://github.com/altersquare/preferred-google-login.git
+    git clone https://github.com/altersquare/preferred-account-login.git
     ```
 2. Open Chrome and navigate to `chrome://extensions/`
 3. Enable "Developer mode" in the top-right corner
@@ -173,7 +173,7 @@ npm run format
 ### Building the Web Store zip
 
 Both scripts read the version from `manifest.json` and create
-`preferred-google-login-v<version>.zip` in the repository root, containing
+`preferred-account-login-v<version>.zip` in the repository root, containing
 only `manifest.json`, `icons/`, and `src/`.
 
 On Windows (PowerShell):
@@ -217,4 +217,4 @@ SOFTWARE.
 ## Contact
 
 Rohan Dhamapurkar - dhamapurkar54@gmail.com  
-Project: [https://github.com/altersquare/preferred-google-login](https://github.com/altersquare/preferred-google-login)
+Project: [https://github.com/altersquare/preferred-account-login](https://github.com/altersquare/preferred-account-login)

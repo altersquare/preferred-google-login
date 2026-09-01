@@ -1,5 +1,5 @@
 # Builds the Chrome Web Store upload zip:
-#   preferred-google-login-v<version>.zip  (version read from manifest.json)
+#   preferred-account-login-v<version>.zip  (version read from manifest.json)
 # Only manifest.json, icons/, and src/ are included.
 #
 # Uses .NET zip APIs directly (instead of Compress-Archive) so entry names
@@ -14,7 +14,7 @@ if (-not $version) {
 	throw "Could not read version from manifest.json"
 }
 
-$out = "preferred-google-login-v$version.zip"
+$out = "preferred-account-login-v$version.zip"
 if (Test-Path $out) {
 	Remove-Item $out -Force
 }
