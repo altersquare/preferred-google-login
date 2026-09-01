@@ -116,8 +116,11 @@ This extension:
 
 - Does NOT collect any user data
 - Does NOT send any information to external servers
-- Stores your domain-email preferences only in your browser's local storage
-- Requires minimal permissions (only storage and scripting)
+- Stores your rules in Chrome's extension storage (`chrome.storage.sync`),
+  which Chrome syncs across your own signed-in profiles when Chrome Sync is
+  enabled. Nothing is sent to the developer.
+- Requires a single API permission (`storage`), plus host access to the
+  domains the content script runs on
 
 ## Contributing
 

@@ -793,25 +793,12 @@ async function handleSaveClick() {
 	}, 2000);
 
 	// Settings are saved at this point; reloading the active tab is only a
-	// convenience and can fail (e.g. the tab is not a Google page, so the
-	// extension has no host permission for it).
+	// convenience, so a failure here is not worth surfacing. tabs.reload()
+	// with no arguments reloads the selected tab of the current window and,
+	// unlike scripting.executeScript() or reading a tab's url, needs no
+	// permission of its own — which keeps the manifest down to "storage".
 	try {
-		const tabs = await chrome.tabs.query({
-			active: true,
-			currentWindow: true,
-		});
-		if (!tabs || tabs.length === 0) {
-			console.warn("No active tab found");
-			return;
-		}
-		if (tabs[0].url && tabs[0].url.includes("chrome:")) return;
-
-		await chrome.scripting.executeScript({
-			target: { tabId: tabs[0].id },
-			function: () => {
-				window.location.reload();
-			},
-		});
+		await chrome.tabs.reload();
 	} catch (error) {
 		console.warn("Could not reload active tab:", error);
 	}

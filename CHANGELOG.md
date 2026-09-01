@@ -14,6 +14,13 @@ Notable changes to Preferred Account Login. The format is based on
   fills in the form and leaves it to `Save Changes` to persist, and unusable
   rows are skipped rather than failing the whole file.
 
+### Removed
+
+- The `scripting` and `tabs` permissions. Both existed only so that saving
+  could reload the active tab; `chrome.tabs.reload()` does the same thing and
+  requires no permission, leaving `storage` as the extension's only API
+  permission.
+
 ### Changed
 
 - The popup heading now uses the extension's own icon instead of the Google

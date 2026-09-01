@@ -4,9 +4,7 @@
 	"version": "7.4.0",
 	"description": "Automatically use your preferred Google account for each Google service. No more switching between accounts!",
 	"permissions": [
-		"scripting",
-		"storage",
-		"tabs"
+		"storage"
 	],
 	"icons": {
 		"16": "icons/icon16.png",

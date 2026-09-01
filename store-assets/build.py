@@ -91,8 +91,7 @@ def write_popup(slug, domain_emails, probe=False):
         "<script>window.chrome={storage:{sync:{_d:%s,"
         "async get(ks){const o={};for(const k of ks)if(k in this._d)o[k]=this._d[k];"
         "return o;},async set(o){Object.assign(this._d,o);}}},"
-        "tabs:{async query(){return [];}},"
-        "scripting:{async executeScript(){}}};</script>"
+        "tabs:{async reload(){}}};</script>"
         % json.dumps({"domainEmails": domain_emails, "isEnabled": True})
     )
 
