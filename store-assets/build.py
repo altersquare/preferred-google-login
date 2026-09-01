@@ -1,0 +1,318 @@
+#!/usr/bin/env python3
+"""
+Generates Chrome Web Store listing assets for Preferred Account Login.
+
+Screenshots embed the REAL popup (src/popup.html + popup.css + popup.js, with a
+stubbed chrome.* API supplying sample rules) inside an iframe, so every listing
+image is an accurate representation of the shipping UI -- which the store's
+metadata policy requires.
+
+Pages are rendered by headless Chrome at 2x and downsampled with LANCZOS for
+crisp text, then flattened to 24-bit RGB PNG with no alpha channel, per the
+store's asset requirements.
+
+Usage:  python store-assets/build.py
+Output: store-assets/*.png  (intermediate HTML lands in store-assets/_src/)
+"""
+
+import base64
+import io
+import json
+import os
+import shutil
+import subprocess
+import sys
+
+from PIL import Image
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ASSETS = os.path.join(ROOT, "store-assets")
+SRC = os.path.join(ASSETS, "_src")
+
+CHROME_CANDIDATES = [
+    os.path.join(os.environ.get("PROGRAMFILES", r"C:\Program Files"),
+                 "Google", "Chrome", "Application", "chrome.exe"),
+    os.path.join(os.environ.get("PROGRAMFILES(X86)", r"C:\Program Files (x86)"),
+                 "Google", "Chrome", "Application", "chrome.exe"),
+    shutil.which("google-chrome") or "",
+    shutil.which("chromium") or "",
+]
+
+NAME = "Preferred Account Login"
+TAGLINE = "The right account for every service. Automatically."
+
+# Brand tokens, matching icons/icon.svg.
+INK = "#0e2a5c"
+INK_SOFT = "#41598a"
+FONT = 'system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+
+# Sentinel colour painted behind the popup during measurement. Anything that is
+# not this colour is popup content, which is how the natural height is found.
+PROBE_BG = (255, 0, 255)
+
+POPUP_W = 600
+ALL_DAYS = [0, 1, 2, 3, 4, 5, 6]
+WEEKDAYS = [1, 2, 3, 4, 5]
+
+
+def find_chrome():
+    for candidate in CHROME_CANDIDATES:
+        if candidate and os.path.exists(candidate):
+            return candidate
+    sys.exit("Could not find Chrome. Set the CHROME environment variable.")
+
+
+def read(*parts):
+    with io.open(os.path.join(ROOT, *parts), encoding="utf-8") as handle:
+        return handle.read()
+
+
+def icon_data_uri():
+    svg = read("icons", "icon.svg")
+    return "data:image/svg+xml;base64," + base64.b64encode(
+        svg.encode("utf-8")).decode("ascii")
+
+
+def rule(email, days=None, enabled=True, **extra):
+    """One domainEmails entry in the shape src/popup.js expects."""
+    return dict({"email": email, "enabled": enabled,
+                 "days": list(ALL_DAYS if days is None else days)}, **extra)
+
+
+def write_popup(slug, domain_emails, probe=False):
+    """Write a standalone, runnable copy of the real popup with sample rules."""
+    css = read("src", "popup.css")
+    js = read("src", "popup.js")
+    html = read("src", "popup.html")
+    body = html.split("<body>", 1)[1].split("</body>", 1)[0]
+    body = body.replace('<script src="popup.js"></script>', "")
+
+    stub = (
+        "<script>window.chrome={storage:{sync:{_d:%s,"
+        "async get(ks){const o={};for(const k of ks)if(k in this._d)o[k]=this._d[k];"
+        "return o;},async set(o){Object.assign(this._d,o);}}},"
+        "tabs:{async query(){return [];}},"
+        "scripting:{async executeScript(){}}};</script>"
+        % json.dumps({"domainEmails": domain_emails, "isEnabled": True})
+    )
+
+    # The popup normally caps itself at 600px and scrolls. For a still image we
+    # want the whole card, so let it grow to its natural height. During a probe
+    # render the page behind the popup is painted magenta so the content height
+    # can be read straight off the PNG.
+    overrides = (
+        "<style>html{background:%s}"
+        "body{max-height:none!important;overflow:visible!important;"
+        "height:max-content!important}</style>"
+        % ("#ff00ff" if probe else "transparent")
+    )
+
+    out = (
+        '<!doctype html><html><head><meta charset="utf-8"><title>%s</title>'
+        "<style>%s</style>%s</head><body>%s\n%s\n<script>%s</script></body></html>"
+        % (NAME, css, overrides, body, stub, js)
+    )
+    filename = "popup-%s%s.html" % (slug, "-probe" if probe else "")
+    io.open(os.path.join(SRC, filename), "w",
+            encoding="utf-8", newline="").write(out)
+    return filename
+
+
+def chrome_shot(chrome, src_file, out_png, width, height):
+    subprocess.run(
+        [chrome, "--headless=new", "--disable-gpu", "--hide-scrollbars",
+         "--force-device-scale-factor=2", "--virtual-time-budget=6000",
+         "--allow-file-access-from-files", "--no-sandbox",
+         "--window-size=%d,%d" % (width, height),
+         "--screenshot=" + out_png,
+         os.path.join(SRC, src_file)],
+        check=True, capture_output=True,
+    )
+
+
+def measure_popup(chrome, slug, domain_emails):
+    """Render the popup over a magenta page and read back its natural height."""
+    probe_file = write_popup(slug, domain_emails, probe=True)
+    raw = os.path.join(SRC, "_probe-%s.png" % slug)
+    chrome_shot(chrome, probe_file, raw, POPUP_W, 2400)
+
+    img = Image.open(raw).convert("RGB")
+    scale = img.width // POPUP_W or 1
+    last_content_row = 0
+    for y in range(img.height - 1, -1, -1):
+        row = img.crop((0, y, img.width, y + 1)).getcolors(maxcolors=1 << 16)
+        if not (len(row) == 1 and row[0][1] == PROBE_BG):
+            last_content_row = y
+            break
+    os.remove(raw)
+    return int(round((last_content_row + 1) / scale))
+
+
+def page(width, height, inner):
+    return """<!doctype html><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:%(w)dpx;height:%(h)dpx;overflow:hidden}
+body{font-family:%(font)s;-webkit-font-smoothing:antialiased;color:%(ink)s;
+ background:
+   radial-gradient(1100px 620px at 12%% -12%%,rgba(91,147,247,.28),transparent 62%%),
+   radial-gradient(900px 560px at 104%% 112%%,rgba(26,95,208,.22),transparent 60%%),
+   linear-gradient(150deg,#f6f9ff 0%%,#e8effd 52%%,#dde7fb 100%%)}
+.frame{background:#fff;border-radius:18px;overflow:hidden;
+ box-shadow:0 30px 64px rgba(14,42,92,.20),0 4px 14px rgba(14,42,92,.10);
+ border:1px solid rgba(14,42,92,.09)}
+.frame iframe{width:%(pw)dpx;border:0;display:block}
+h1{font-size:38px;line-height:1.16;font-weight:700;letter-spacing:-.7px}
+p.sub{font-size:19px;line-height:1.45;color:%(soft)s;font-weight:400}
+</style></head><body>%(inner)s</body></html>""" % {
+        "w": width, "h": height, "pw": POPUP_W, "font": FONT,
+        "ink": INK, "soft": INK_SOFT, "inner": inner,
+    }
+
+
+# Screenshot layout: text column on the left, popup card right-aligned, both
+# vertically centred in the 1280x800 frame. A portrait card centred under a
+# centred headline leaves most of a landscape frame empty, so the card is given
+# the full height instead and scaled to fit.
+CARD_RIGHT = 1240
+CARD_MAX_H = 672
+
+
+def screenshot_page(headline, sub, popup_file, popup_h):
+    scale = min(1.0, float(CARD_MAX_H) / popup_h)
+    card_w = int(POPUP_W * scale)
+    card_h = int(popup_h * scale)
+    return page(1280, 800, """
+<div style="position:absolute;left:80px;top:0;width:500px;height:800px;
+            display:flex;flex-direction:column;justify-content:center">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:26px">
+    <img src="%(icon)s" width="40" height="40" alt="">
+    <span style="font-size:19px;font-weight:600;letter-spacing:-.2px">%(name)s</span>
+  </div>
+  <h1>%(head)s</h1>
+  <p class="sub" style="margin-top:18px">%(sub)s</p>
+</div>
+<div class="frame" style="position:absolute;left:%(cx)dpx;top:%(cy)dpx;
+                          width:%(cw)dpx;height:%(ch)dpx">
+  <iframe src="%(pf)s" scrolling="no"
+          style="height:%(ph)dpx;transform:scale(%(sc)s);transform-origin:top left"></iframe>
+</div>""" % {
+        "icon": icon_data_uri(), "name": NAME, "head": headline, "sub": sub,
+        "pf": popup_file, "ph": popup_h, "sc": scale,
+        "cw": card_w, "ch": card_h,
+        "cx": CARD_RIGHT - card_w, "cy": (800 - card_h) // 2,
+    })
+
+
+def render(chrome, html, out_png, width, height):
+    src_file = out_png.replace(".png", ".html")
+    io.open(os.path.join(SRC, src_file), "w",
+            encoding="utf-8", newline="").write(html)
+    raw = os.path.join(SRC, "_raw-" + out_png)
+    chrome_shot(chrome, src_file, raw, width, height)
+
+    img = Image.open(raw)
+    if img.size != (width, height):
+        img = img.resize((width, height), Image.LANCZOS)
+    # The store rejects PNGs with an alpha channel, so composite onto white.
+    flat = Image.new("RGB", (width, height), (255, 255, 255))
+    flat.paste(img, (0, 0), img.convert("RGBA"))
+    dest = os.path.join(ASSETS, out_png)
+    flat.save(dest, "PNG", optimize=True)
+    os.remove(raw)
+    print("  %-32s %4dx%-4d  %6.1f KB"
+          % (out_png, width, height, os.path.getsize(dest) / 1024.0))
+
+
+SHOTS = [
+    ("01-overview",
+     "One preferred account per service",
+     "Tell each site which of your signed-in accounts to open with, then stop switching.",
+     {"mail.google.com": rule("you@gmail.com"),
+      "drive.google.com": rule("you@company.com"),
+      "youtube.com": rule("you@gmail.com")}),
+
+    ("02-work-personal",
+     "Work on one, personal on another",
+     "Personal inbox, work drive, personal video. Every rule is independent.",
+     {"mail.google.com": rule("you@gmail.com"),
+      "drive.google.com": rule("you@company.com"),
+      "docs.google.com": rule("you@company.com"),
+      "youtube.com": rule("you@gmail.com")}),
+
+    ("03-schedule",
+     "Rules that follow your week",
+     "Limit a rule to selected days and an active-hours window: work account, "
+     "9 to 6, weekdays only.",
+     {"drive.google.com": rule("you@company.com", WEEKDAYS, timeEnabled=True,
+                               startTime="09:00", endTime="18:00"),
+      "mail.google.com": rule("you@gmail.com")}),
+
+    ("04-toggles",
+     "Switch a rule off without deleting it",
+     "Pause a single rule, or turn the whole extension off from the header toggle.",
+     {"mail.google.com": rule("you@gmail.com"),
+      "drive.google.com": rule("you@company.com", enabled=False),
+      "youtube.com": rule("you@gmail.com", enabled=False)}),
+
+    ("05-export-import",
+     "Back up your rules, or move them",
+     "Export every rule to a JSON file and import it on another profile. "
+     "Add any supported service by hostname, too.",
+     {"mail.google.com": rule("you@gmail.com"),
+      "gemini.google.com": rule("you@company.com"),
+      "meet.google.com": rule("you@company.com"),
+      "photos.google.com": rule("you@gmail.com")}),
+]
+
+
+def main():
+    chrome = os.environ.get("CHROME") or find_chrome()
+    os.makedirs(SRC, exist_ok=True)
+    print("Chrome: %s" % chrome)
+    print("Writing listing assets to %s" % ASSETS)
+
+    for slug, headline, sub, rules in SHOTS:
+        popup_h = measure_popup(chrome, slug, rules)
+        popup_file = write_popup(slug, rules)
+        render(chrome, screenshot_page(headline, sub, popup_file, popup_h),
+               "screenshot-%s.png" % slug, 1280, 800)
+
+    render(chrome, page(440, 280, """
+<div style="position:absolute;inset:0;padding:28px;display:flex;flex-direction:column;
+            justify-content:center;align-items:center;text-align:center">
+  <img src="%(icon)s" width="78" height="78" alt="" style="margin-bottom:16px">
+  <div style="font-size:27px;font-weight:700;letter-spacing:-.5px;line-height:1.18">
+    Preferred<br>Account&nbsp;Login</div>
+  <div style="font-size:13px;color:%(soft)s;margin-top:12px;line-height:1.45;max-width:330px">
+    %(tag)s</div>
+</div>""" % {"icon": icon_data_uri(), "soft": INK_SOFT, "tag": TAGLINE}),
+        "promo-small-440x280.png", 440, 280)
+
+    marquee_rules = {"mail.google.com": rule("you@gmail.com"),
+                     "drive.google.com": rule("you@company.com"),
+                     "youtube.com": rule("you@gmail.com")}
+    marquee_h = measure_popup(chrome, "marquee", marquee_rules)
+    marquee_file = write_popup("marquee", marquee_rules)
+    render(chrome, page(1400, 560, """
+<div style="position:absolute;inset:0;display:flex;align-items:center">
+  <div style="width:660px;padding-left:88px">
+    <img src="%(icon)s" width="100" height="100" alt="" style="margin-bottom:26px">
+    <div style="font-size:58px;font-weight:700;letter-spacing:-1.5px;line-height:1.08">
+      Preferred<br>Account Login</div>
+    <div style="font-size:23px;color:%(soft)s;margin-top:22px;line-height:1.45;max-width:520px">
+      %(tag)s</div>
+  </div>
+  <div class="frame" style="position:absolute;left:770px;top:60px;width:%(fw)dpx;height:440px">
+    <iframe src="%(pf)s" scrolling="no"
+            style="height:%(ph)dpx;transform:scale(%(sc)s);transform-origin:top left"></iframe>
+  </div>
+</div>""" % {"icon": icon_data_uri(), "soft": INK_SOFT, "tag": TAGLINE,
+             "pf": marquee_file, "ph": marquee_h, "sc": 0.98,
+             "fw": int(POPUP_W * 0.98)}),
+        "promo-marquee-1400x560.png", 1400, 560)
+
+    print("Done.")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,6 +1,6 @@
 {
   "name": "preferred-google-login",
-  "version": "7.3.0",
+  "version": "7.4.0",
   "description": "This Chrome extension simplifies switching between multiple Google accounts by automatically adding the `authuser` parameter to relevant Google domains.",
   "main": "content.js",
   "scripts": {

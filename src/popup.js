@@ -175,6 +175,16 @@ async function handleDOMLoad() {
 	// Save changes
 	saveButton.addEventListener("click", handleSaveClick);
 
+	// Back up the rules to a file, or load them back in
+	const importFile = document.getElementById("importFile");
+	document
+		.getElementById("exportButton")
+		.addEventListener("click", handleExportClick);
+	document
+		.getElementById("importButton")
+		.addEventListener("click", () => importFile.click());
+	importFile.addEventListener("change", handleImportFile);
+
 	// Load domainEmails from storage
 	let { domainEmails } = await getFromStorage("domainEmails");
 
@@ -621,7 +631,11 @@ function validateEmail(email) {
 	return regex.test(email);
 }
 
-async function handleSaveClick() {
+// Reads every rule row out of the form, showing inline errors against any row
+// that fails validation. Returns null if at least one row is invalid, so the
+// caller can bail out. Shared by Save Changes and Export so the two always
+// agree on what counts as a valid rule.
+function collectDomainEmailsFromForm() {
 	const domainEmailContainers = document.querySelectorAll(
 		".domain-email-container"
 	);
@@ -741,7 +755,14 @@ async function handleSaveClick() {
 		};
 	});
 
-	if (!isValid) {
+	return isValid ? domainEmails : null;
+}
+
+async function handleSaveClick() {
+	setTransferStatus();
+
+	const domainEmails = collectDomainEmailsFromForm();
+	if (!domainEmails) {
 		return;
 	}
 
@@ -794,6 +815,178 @@ async function handleSaveClick() {
 	} catch (error) {
 		console.warn("Could not reload active tab:", error);
 	}
+}
+
+/* -------------------------------------------------------------------------
+ * Import / export
+ *
+ * Rules travel as a JSON file so they can be backed up or moved to another
+ * profile. An import only fills in the form; nothing is written to storage
+ * until the user chooses Save Changes.
+ * ---------------------------------------------------------------------- */
+
+const EXPORT_APP_ID = "preferred-account-login";
+const EXPORT_FORMAT_VERSION = 1;
+
+function ruleCountLabel(count) {
+	return count === 1 ? "1 rule" : `${count} rules`;
+}
+
+function setTransferStatus(message = "", isError = false) {
+	const status = document.getElementById("transferStatus");
+	if (!status) return;
+
+	status.textContent = message;
+	status.classList.toggle("error", Boolean(message) && isError);
+	status.style.display = message ? "block" : "none";
+}
+
+function buildExportFileName() {
+	const [date] = new Date().toISOString().split("T");
+	return `preferred-account-login-rules-${date}.json`;
+}
+
+// Hands the user a file without needing the "downloads" permission — inside an
+// extension popup an object URL on a synthetic anchor is enough.
+function downloadJson(fileName, data) {
+	const url = URL.createObjectURL(
+		new Blob([`${JSON.stringify(data, null, 2)}\n`], {
+			type: "application/json",
+		})
+	);
+
+	const link = document.createElement("a");
+	link.href = url;
+	link.download = fileName;
+	document.body.appendChild(link);
+	link.click();
+	link.remove();
+
+	// Revoking straight away can cancel the download before it starts.
+	setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+function handleExportClick() {
+	setTransferStatus();
+
+	// Export what is on screen rather than what is in storage, so the file
+	// matches what the user is looking at. Going through the save-time
+	// validation keeps every exported file importable.
+	const rules = collectDomainEmailsFromForm();
+	if (!rules) {
+		setTransferStatus("Fix the highlighted errors before exporting.", true);
+		return;
+	}
+
+	const count = Object.keys(rules).length;
+	if (!count) {
+		setTransferStatus("There are no rules to export yet.", true);
+		return;
+	}
+
+	downloadJson(buildExportFileName(), {
+		app: EXPORT_APP_ID,
+		formatVersion: EXPORT_FORMAT_VERSION,
+		exportedAt: new Date().toISOString(),
+		rules,
+	});
+	setTransferStatus(`Exported ${ruleCountLabel(count)}.`);
+}
+
+// Accepts a file this extension wrote, or a bare { domain: setting } map, so a
+// hand-written file or one taken straight from storage still imports.
+function extractRuleMap(parsed) {
+	if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+		return null;
+	}
+
+	for (const key of ["rules", "domainEmails"]) {
+		const value = parsed[key];
+		if (value && typeof value === "object" && !Array.isArray(value)) {
+			return value;
+		}
+	}
+
+	// A wrapper without a rule map holds nothing importable; anything else is
+	// treated as the map itself.
+	return "app" in parsed || "formatVersion" in parsed ? null : parsed;
+}
+
+// Normalizes an imported map against the same rules the form enforces. A row
+// that cannot be resolved to a supported domain, or that carries an unusable
+// email, is dropped rather than failing the whole import; an unusable time
+// window is cleared and the rest of the row kept.
+function normalizeImportedRules(ruleMap) {
+	const rules = {};
+	let skipped = 0;
+
+	for (const [rawDomain, rawValue] of Object.entries(ruleMap)) {
+		const domain = resolveDomainInput(rawDomain);
+		if (!domain || rules[domain]) {
+			skipped++;
+			continue;
+		}
+
+		const setting = normalizeDomainSetting(rawValue);
+		if (!validateEmail(setting.email)) {
+			skipped++;
+			continue;
+		}
+
+		if (
+			setting.timeEnabled &&
+			!isValidTimeRange(setting.startTime, setting.endTime)
+		) {
+			setting.timeEnabled = false;
+			setting.startTime = "";
+			setting.endTime = "";
+		}
+
+		rules[domain] = setting;
+	}
+
+	return { rules, skipped };
+}
+
+async function handleImportFile(event) {
+	setTransferStatus();
+
+	const [file] = event.target.files || [];
+	// Clear the input so picking the same file again still fires a change.
+	event.target.value = "";
+	if (!file) return;
+
+	let parsed;
+	try {
+		parsed = JSON.parse(await file.text());
+	} catch {
+		setTransferStatus("That file is not valid JSON.", true);
+		return;
+	}
+
+	const ruleMap = extractRuleMap(parsed);
+	if (!ruleMap) {
+		setTransferStatus("That file does not contain any rules.", true);
+		return;
+	}
+
+	const { rules, skipped } = normalizeImportedRules(ruleMap);
+	const count = Object.keys(rules).length;
+	if (!count) {
+		setTransferStatus("No usable rules were found in that file.", true);
+		return;
+	}
+
+	// Replace the list rather than merging it, so an exported file restores
+	// exactly what it captured. Nothing reaches storage until Save Changes, so
+	// closing the popup undoes this.
+	populateDomainEmailList(document.getElementById("domainEmailList"), rules);
+	enableSaveButton();
+	setTransferStatus(
+		`Loaded ${ruleCountLabel(count)}` +
+			(skipped ? `, skipped ${skipped}` : "") +
+			". Choose Save Changes to keep them."
+	);
 }
 
 function validateAndMutateKey(key) {

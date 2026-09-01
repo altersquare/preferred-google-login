@@ -1,8 +1,24 @@
 # Changelog
 
-Notable changes to Preferred Google Login. The format is based on
+Notable changes to Preferred Account Login. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and versions follow the
 `version` field in `manifest.json`.
+
+## [7.4.0] — 2026-09-01
+
+### Added
+
+- **Export and import rules**: `Export` writes the current rules to a
+  `preferred-account-login-rules-<date>.json` file, and `Import` reads one back
+  in, so rules can be backed up or moved to another browser profile. An import
+  fills in the form and leaves it to `Save Changes` to persist, and unusable
+  rows are skipped rather than failing the whole file.
+
+### Changed
+
+- The popup heading now uses the extension's own icon instead of the Google
+  logo, and the interface no longer requests the "Google Sans" typeface, to
+  comply with Google's branding guidelines for Chrome Web Store listings.
 
 ## [7.3.0] — 2026-08-22
 
