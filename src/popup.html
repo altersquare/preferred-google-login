@@ -9,34 +9,96 @@
 	<body>
 		<div class="heading-wrapper">
 			<div class="heading">
-				Preferred
 				<svg
-					class="lJpQBb google-icon"
-					aria-label="Go to Google Home"
-					height="24"
-					width="24"
-					focusable="false"
-					viewBox="0 0 24 24"
+					class="brand-icon"
+					viewBox="0 0 128 128"
 					xmlns="http://www.w3.org/2000/svg"
+					aria-hidden="true"
+					focusable="false"
 				>
+					<defs>
+						<linearGradient id="pal-bg" x1="0" y1="0" x2="1" y2="1">
+							<stop offset="0" stop-color="#5b93f7" />
+							<stop offset="1" stop-color="#1a5fd0" />
+						</linearGradient>
+						<radialGradient
+							id="pal-sheen"
+							cx="0.5"
+							cy="0.5"
+							r="0.5"
+						>
+							<stop
+								offset="0"
+								stop-color="#ffffff"
+								stop-opacity="0.14"
+							/>
+							<stop
+								offset="0.7"
+								stop-color="#ffffff"
+								stop-opacity="0.06"
+							/>
+							<stop
+								offset="1"
+								stop-color="#ffffff"
+								stop-opacity="0"
+							/>
+						</radialGradient>
+						<clipPath id="pal-squircle">
+							<rect
+								x="4"
+								y="4"
+								width="120"
+								height="120"
+								rx="28"
+							/>
+						</clipPath>
+					</defs>
+
+					<rect
+						x="4"
+						y="4"
+						width="120"
+						height="120"
+						rx="28"
+						fill="url(#pal-bg)"
+					/>
+
+					<!-- subtle top-left highlight, fading out with no hard edge -->
+					<g clip-path="url(#pal-squircle)">
+						<ellipse
+							cx="34"
+							cy="14"
+							rx="96"
+							ry="62"
+							fill="url(#pal-sheen)"
+						/>
+					</g>
+
+					<!-- avatar: head + shoulders -->
+					<g clip-path="url(#pal-squircle)">
+						<circle cx="56" cy="50" r="18" fill="#ffffff" />
+						<path d="M26 102 a30 27 0 0 1 60 0 z" fill="#ffffff" />
+					</g>
+
+					<!-- checkmark badge -->
+					<circle
+						cx="92"
+						cy="88"
+						r="23"
+						fill="#34A853"
+						stroke="#ffffff"
+						stroke-width="6"
+					/>
 					<path
-						fill="#4285f4"
-						d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"
-					></path>
-					<path
-						fill="#34a853"
-						d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"
-					></path>
-					<path
-						fill="#fbbc04"
-						d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"
-					></path>
-					<path
-						fill="#ea4335"
-						d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"
-					></path>
+						d="M82 88.5 l7 7 l14 -14"
+						stroke="#ffffff"
+						stroke-width="7"
+						fill="none"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
 				</svg>
-				Login
+				Preferred Account Login
 			</div>
 			<label class="toggle-wrapper">
 				<div class="switch">
@@ -50,13 +112,29 @@
 		<div class="domain-email-list" id="domainEmailList">
 			<!-- Dynamic content will be inserted here -->
 		</div>
-		<div class="button-row">
-			<button class="addButton disabled" id="addButton">
-				Add Domain
-			</button>
-			<button class="saveButton disabled" id="saveButton">
-				Save Changes
-			</button>
+		<div class="footer">
+			<div class="button-row">
+				<button class="textButton" id="exportButton">Export</button>
+				<button class="textButton" id="importButton">Import</button>
+				<button class="addButton disabled" id="addButton">
+					Add Domain
+				</button>
+				<button class="saveButton disabled" id="saveButton">
+					Save Changes
+				</button>
+			</div>
+			<div
+				class="transfer-status"
+				id="transferStatus"
+				role="status"
+				aria-live="polite"
+			></div>
+			<input
+				type="file"
+				id="importFile"
+				accept="application/json,.json"
+				hidden
+			/>
 		</div>
 		<script src="popup.js"></script>
 	</body>

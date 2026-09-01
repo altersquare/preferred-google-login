@@ -1,12 +1,10 @@
 {
 	"manifest_version": 3,
-	"name": "Preferred Google Login",
-	"version": "7.3.0",
-	"description": "Automatically use your preferred Google account for each Google service. No more switching between accounts!",
+	"name": "Preferred Account Login",
+	"version": "7.4.0",
+	"description": "Open each service with the account you chose. No more switching between accounts.",
 	"permissions": [
-		"scripting",
-		"storage",
-		"tabs"
+		"storage"
 	],
 	"icons": {
 		"16": "icons/icon16.png",

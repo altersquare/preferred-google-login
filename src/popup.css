@@ -21,33 +21,41 @@
 
 	/* Elevation Tokens */
 	--md-sys-elevation-0: none;
-	--md-sys-elevation-1: 0px 1px 2px rgba(0, 0, 0, 0.3),
-		0px 1px 3px 1px rgba(0, 0, 0, 0.15);
-	--md-sys-elevation-2: 0px 1px 2px rgba(0, 0, 0, 0.3),
-		0px 2px 6px 2px rgba(0, 0, 0, 0.15);
-	--md-sys-elevation-3: 0px 4px 8px 3px rgba(0, 0, 0, 0.15),
-		0px 1px 3px rgba(0, 0, 0, 0.3);
+	--md-sys-elevation-1:
+		0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+	--md-sys-elevation-2:
+		0px 1px 2px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+	--md-sys-elevation-3:
+		0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.3);
 
 	/* Typography Tokens */
-	--md-sys-typescale-headline-small-font: "Google Sans", Roboto, sans-serif;
+	--md-sys-typescale-headline-small-font:
+		system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+		sans-serif;
 	--md-sys-typescale-headline-small-line-height: 28px;
 	--md-sys-typescale-headline-small-size: 20px;
 	--md-sys-typescale-headline-small-tracking: 0px;
 	--md-sys-typescale-headline-small-weight: 400;
 
-	--md-sys-typescale-title-medium-font: "Google Sans", Roboto, sans-serif;
+	--md-sys-typescale-title-medium-font:
+		system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+		sans-serif;
 	--md-sys-typescale-title-medium-line-height: 20px;
 	--md-sys-typescale-title-medium-size: 14px;
 	--md-sys-typescale-title-medium-tracking: 0.15px;
 	--md-sys-typescale-title-medium-weight: 500;
 
-	--md-sys-typescale-body-medium-font: Roboto, sans-serif;
+	--md-sys-typescale-body-medium-font:
+		system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+		sans-serif;
 	--md-sys-typescale-body-medium-line-height: 18px;
 	--md-sys-typescale-body-medium-size: 13px;
 	--md-sys-typescale-body-medium-tracking: 0.25px;
 	--md-sys-typescale-body-medium-weight: 400;
 
-	--md-sys-typescale-label-large-font: "Google Sans", Roboto, sans-serif;
+	--md-sys-typescale-label-large-font:
+		system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+		sans-serif;
 	--md-sys-typescale-label-large-line-height: 18px;
 	--md-sys-typescale-label-large-size: 13px;
 	--md-sys-typescale-label-large-tracking: 0.1px;
@@ -94,7 +102,9 @@ body {
 
 .heading {
 	font-family: var(--md-sys-typescale-headline-small-font);
-	font-size: var(--md-sys-typescale-headline-small-size); /* Slightly adjusted */
+	font-size: var(
+		--md-sys-typescale-headline-small-size
+	); /* Slightly adjusted */
 	font-weight: 500;
 	color: var(--md-sys-color-on-surface);
 	display: flex;
@@ -102,9 +112,11 @@ body {
 	gap: 12px;
 }
 
-.google-icon {
-	width: 24px;
-	height: 24px;
+.brand-icon {
+	width: 26px;
+	height: 26px;
+	display: block;
+	flex-shrink: 0;
 }
 
 /* Global Toggle Switch (MD3 Switch) */
@@ -307,11 +319,15 @@ input:checked + .slider:before {
 
 /* Hover State */
 .switch:hover .slider:before {
-	background-color: var(--md-sys-color-on-surface-variant); /* Darker thumb on hover */
+	background-color: var(
+		--md-sys-color-on-surface-variant
+	); /* Darker thumb on hover */
 }
 
 input:checked:hover + .slider:before {
-	background-color: var(--md-sys-color-primary-container); /* Lighten on checked hover */
+	background-color: var(
+		--md-sys-color-primary-container
+	); /* Lighten on checked hover */
 }
 
 /* Input Fields (Outlined Text Field Style) */
@@ -461,15 +477,32 @@ input[type="text"]::placeholder {
 }
 
 /* Footer Actions */
-.button-row {
-	padding: 24px;
+.footer {
 	background-color: var(--md-sys-color-surface);
 	border-top: 1px solid var(--md-sys-color-outline-variant);
-	display: flex;
-	gap: 16px;
 	position: sticky;
 	bottom: 0;
 	z-index: 1001;
+}
+
+.button-row {
+	padding: 24px;
+	display: flex;
+	gap: 12px;
+}
+
+/* Import/export feedback, shown under the button row only while it has text. */
+.transfer-status {
+	display: none;
+	padding: 0 24px 16px;
+	font-family: var(--md-sys-typescale-body-medium-font);
+	font-size: var(--md-sys-typescale-body-medium-size);
+	line-height: var(--md-sys-typescale-body-medium-line-height);
+	color: var(--md-sys-color-on-surface-variant);
+}
+
+.transfer-status.error {
+	color: var(--md-sys-color-error);
 }
 
 button {
@@ -489,6 +522,20 @@ button {
 		background-color var(--md-sys-motion-duration-short2),
 		box-shadow var(--md-sys-motion-duration-short2),
 		opacity var(--md-sys-motion-duration-short2);
+}
+
+/* Text Button (Export / Import) — secondary actions, sized to their label
+   so Add Domain and Save Changes keep the width they had. */
+.textButton {
+	flex: 0 0 auto;
+	padding: 0 16px;
+	background-color: transparent;
+	color: var(--md-sys-color-primary);
+}
+
+.textButton:hover {
+	background-color: var(--md-sys-color-primary-container);
+	color: var(--md-sys-color-on-primary-container);
 }
 
 /* Outlined Button (Add Domain) */

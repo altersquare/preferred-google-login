@@ -1,4 +1,4 @@
-# Preferred Google Login
+# Preferred Account Login
 
 A Chrome extension that automatically adds the `authuser` parameter to Google domains, allowing you to set your preferred Google account for each service.
 
@@ -17,15 +17,17 @@ If you use multiple Google accounts (personal, work, school), you know the frust
 - **Google Domain Autocomplete**: Includes autocomplete suggestions for popular Google domains
 - **User-Friendly Interface**: Clean, modern UI with toggle to quickly enable/disable the extension
 - **Multiple Account Support**: Easily manage multiple Google accounts across different services
+- **Export & Import**: Save your rules to a JSON file and load them back on another profile or browser
 - **Privacy-Focused**: No data collection, all settings stored locally in your browser
 
 ## Installation
 
 ### Manual Installation (Developer Mode)
+
 1. Download or clone this repository:
-   ```bash
-   git clone https://github.com/altersquareio/preferred-google-login.git
-   ```
+    ```bash
+    git clone https://github.com/altersquare/preferred-google-login.git
+    ```
 2. Open Chrome and navigate to `chrome://extensions/`
 3. Enable "Developer mode" in the top-right corner
 4. Click "Load unpacked" and select the directory containing the extension files
@@ -35,13 +37,24 @@ If you use multiple Google accounts (personal, work, school), you know the frust
 1. Click the extension icon in your browser toolbar
 2. Toggle the extension on/off using the switch in the header
 3. Add domain and email pairs:
-   - Click "Add Domain" to create a new entry
-   - Enter a Google domain — pick a service from the autocomplete suggestions, or type any hostname (or paste a URL) under `google.com`, `youtube.com`, or `ai.google`
-   - Enter the Gmail address you prefer to use for that domain
-   - Choose the days when the rule should be active
-   - Optionally enable `Active hours` and set a start and end time
+    - Click "Add Domain" to create a new entry
+    - Enter a Google domain — pick a service from the autocomplete suggestions, or type any hostname (or paste a URL) under `google.com`, `youtube.com`, or `ai.google`
+    - Enter the Gmail address you prefer to use for that domain
+    - Choose the days when the rule should be active
+    - Optionally enable `Active hours` and set a start and end time
 4. Click "Save Changes" to apply your settings
 5. Visit any Google service - the extension will automatically redirect you to use your preferred account
+
+### Backing up and moving rules
+
+- Click "Export" to download the current rules as
+  `preferred-account-login-rules-<date>.json`. Export uses the same validation
+  as saving, so fix any highlighted errors first.
+- Click "Import" and pick a previously exported file to load those rules. The
+  imported rules replace what is in the list, but nothing is written until you
+  click "Save Changes" — closing the popup discards the import.
+- Rows that name an unsupported domain or an invalid email address are skipped,
+  and the popup reports how many were loaded and how many were skipped.
 
 ## Rule Behavior
 
@@ -55,11 +68,11 @@ If you use multiple Google accounts (personal, work, school), you know the frust
 
 ## Domain Configuration Examples
 
-| Domain | Email | Result |
-|--------|-------|--------|
-| youtube.com | work@gmail.com | YouTube always uses your work account |
-| mail.google.com | personal@gmail.com | Gmail always opens with your personal account |
-| drive.google.com | school@gmail.com | Google Drive defaults to your school account |
+| Domain           | Email              | Result                                        |
+| ---------------- | ------------------ | --------------------------------------------- |
+| youtube.com      | work@gmail.com     | YouTube always uses your work account         |
+| mail.google.com  | personal@gmail.com | Gmail always opens with your personal account |
+| drive.google.com | school@gmail.com   | Google Drive defaults to your school account  |
 
 You can further narrow any of those rules with selected days and optional active hours. For example, `drive.google.com` can use your work account only on weekdays from `09:00` to `18:00`, while `youtube.com` can stay active all day every day.
 
@@ -80,6 +93,7 @@ hostname.
 ## How It Works
 
 The extension:
+
 1. Checks if the current website is a Google domain
 2. Determines if you've configured a preferred account for that domain
 3. Checks whether the rule is active for the current day and, if configured, the current local time
@@ -98,11 +112,17 @@ The extension:
 
 ## Privacy
 
-This extension:
+Full policy: [PRIVACY.md](PRIVACY.md)
+
+In short, this extension:
+
 - Does NOT collect any user data
 - Does NOT send any information to external servers
-- Stores your domain-email preferences only in your browser's local storage
-- Requires minimal permissions (only storage and scripting)
+- Stores your rules in Chrome's extension storage (`chrome.storage.sync`),
+  which Chrome syncs across your own signed-in profiles when Chrome Sync is
+  enabled. Nothing is sent to the developer.
+- Requires a single API permission (`storage`), plus host access to the
+  domains the content script runs on
 
 ## Contributing
 
@@ -197,4 +217,4 @@ SOFTWARE.
 ## Contact
 
 Rohan Dhamapurkar - dhamapurkar54@gmail.com  
-Project: [https://github.com/altersquareio/preferred-google-login](https://github.com/altersquareio/preferred-google-login)
+Project: [https://github.com/altersquare/preferred-google-login](https://github.com/altersquare/preferred-google-login)
